@@ -41,7 +41,7 @@ export class OKFWorkflowOrchestrator {
   }
 
   async run(repoPath: string): Promise<OKFMetadata> {
-    console.log(`=== Starting OKF Phase 1 Workflow for: ${repoPath} ===\n`);
+    console.log(`=== Starting OKF Workflow for: ${repoPath} ===\n`);
 
     // Stage 1: Extract Knowledge Graph
     console.log(`[Workflow: Stage 1] Extracting Knowledge Graph...`);
@@ -84,7 +84,7 @@ export class OKFWorkflowOrchestrator {
     };
 
     await this.storage.writeMetadata(repoPath, metadata);
-    console.log(`\n=== OKF Phase 1 Workflow Completed Successfully! ===`);
+    console.log(`\n=== OKF Workflow Completed Successfully! ===`);
 
     return metadata;
   }

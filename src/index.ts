@@ -13,7 +13,7 @@ async function main() {
   const isMock = args.includes('--mock');
   const targetPath = args.find((a) => !a.startsWith('-') && a !== command) || '.';
 
-  console.log('OKF - Knowledge Extraction Engine (Phase 1 MVP)');
+  console.log('OKF - Knowledge Extraction Engine');
 
   if (!command || command === '--help' || command === '-h') {
     console.log(`
@@ -22,7 +22,7 @@ Usage: okf <command> [target-path] [options]
 Commands:
   init <path>       Index target repository using codebase-memory-mcp
   plan <path>       Generate Execution Plan from Knowledge Graph
-  run <path>        Execute full Phase 1 Workflow (Init → Plan → Review → Execute → .okf)
+  run <path>        Execute full Workflow (Init → Plan → Review → Execute → .okf)
   help              Show help information
 
 Options:

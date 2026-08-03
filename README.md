@@ -36,9 +36,9 @@ Business documentation should always be treated as inferred and reviewed by huma
 
 ---
 
-## Phase 1
+## Scope
 
-Current milestone:
+Capabilities:
 
 - Analyze repository using Codebase Memory
 - Build execution plan

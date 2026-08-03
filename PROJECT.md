@@ -47,7 +47,7 @@ without reading hundreds of source files.
 
 ---
 
-## Phase 1
+## Workflow
 
 Input
 
@@ -77,7 +77,7 @@ Nothing more.
 
 ---
 
-## Future Phases
+## Out of Scope
 
 - Documentation Renderer
 - Docusaurus
