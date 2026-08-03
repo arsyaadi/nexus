@@ -7,7 +7,7 @@ import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
 
 import { CodebaseAnalyzer, LocalGraphProvider } from '../analyzer/index.js';
-import { ModulePlanner } from '../planner/index.js';
+import { ModulePlanner, E2EFlowGenerator } from '../planner/index.js';
 import { FileSystemOKFWriter } from '../storage/index.js';
 import { OKFMetadata } from '../types/index.js';
 import { DocusaurusExporter } from '../exporter/docusaurusExporter.js';
@@ -121,7 +121,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'okf_export',
         description:
-          'ALWAYS use this tool whenever the user asks to export, convert, or generate Word documents (.docx) or Docusaurus sites from an .okf package or repository. DO NOT run external shell tools like pandoc, python, or libreoffice. Supported formats: docx (generates technical.docx and business.docx), docusaurus.',
+          'ALWAYS use this tool whenever the user asks to export, convert, or generate Word documents (.docx) or Docusaurus sites from an .okf package or repository. DO NOT run external shell tools like pandoc, python, or libreoffice. Supported formats: docx (generates single unified documentation.docx with Master E2E Flow diagram), docusaurus.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -160,13 +160,33 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const analyzer = new CodebaseAnalyzer();
 
       const graph = await analyzer.getKnowledgeGraph(repoPath);
+
+      // Generate Master E2E Flow documentation & diagram
+      const e2eGenerator = new E2EFlowGenerator();
+      const repoName = path.basename(path.resolve(repoPath)) || 'System';
+      const e2eFlow = e2eGenerator.generate(graph, repoName);
+
+      // Save .okf/e2e_flow.md
+      await writer.initializePackage(repoPath);
+      await writer.writeE2EFlow(repoPath, e2eFlow.markdownContent);
+
       const plan = await planner.createPlan(graph, repoPath);
 
       return {
         content: [
           {
             type: 'text',
-            text: JSON.stringify(plan, null, 2),
+            text: JSON.stringify(
+              {
+                status: 'success',
+                message: 'AST Knowledge Graph analyzed and Master E2E Flow documentation generated.',
+                e2eFlowFile: path.join(repoPath, '.okf', 'e2e_flow.md'),
+                masterMermaidDiagram: e2eFlow.masterMermaid,
+                plan,
+              },
+              null,
+              2
+            ),
           },
         ],
       };
