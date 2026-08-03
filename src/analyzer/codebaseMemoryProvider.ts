@@ -25,17 +25,36 @@ export class CodebaseMemoryProvider implements GraphProvider {
     return { client, transport };
   }
 
-  async indexRepository(repoPath: string): Promise<void> {
+  async indexRepository(repoPath: string, mode: 'full' | 'moderate' | 'fast' = 'full'): Promise<void> {
     const absPath = path.resolve(repoPath);
-    console.log(`[CodebaseMemoryProvider] Triggering repo indexing for: ${absPath}...`);
+    console.log(`[CodebaseMemoryProvider] Triggering repo indexing for: ${absPath} (mode: ${mode})...`);
 
     const { client, transport } = await this.createClient();
     try {
-      const response = await client.callTool({
+      const response = (await client.callTool({
         name: 'index_repository',
-        arguments: { path: absPath },
-      });
-      console.log(`[CodebaseMemoryProvider] Indexing response:`, JSON.stringify(response.content, null, 2));
+        arguments: { repo_path: absPath, mode },
+      })) as { isError?: boolean; content: Array<{ type: string; text: string }> };
+
+      const contentText = response.content?.[0]?.text || '';
+      console.log(`[CodebaseMemoryProvider] Indexing response:`, contentText);
+
+      if (response.isError || contentText.includes('"status":"error"')) {
+        if (mode !== 'fast') {
+          console.warn(`[CodebaseMemoryProvider] Indexing mode '${mode}' failed. Retrying with mode 'fast'...`);
+          await transport.close();
+          return this.indexRepository(repoPath, 'fast');
+        }
+
+        let hint = 'Indexing failed.';
+        try {
+          const parsed = JSON.parse(contentText);
+          if (parsed.hint) hint = parsed.hint;
+        } catch {
+          // ignore json parse error
+        }
+        throw new Error(`Codebase Memory Indexing Failed for ${absPath}: ${hint}`);
+      }
     } finally {
       await transport.close();
     }
@@ -57,14 +76,13 @@ export class CodebaseMemoryProvider implements GraphProvider {
         const parsed = JSON.parse(projectsRes.content[0].text);
         const projects = parsed.projects || [];
         const match = projects.find(
-          (p: { root_path?: string; git?: { canonical_root?: string } }) =>
-            p.root_path === absPath || p.git?.canonical_root === absPath
+          (p: { root_path?: string; git?: { canonical_root?: string; worktree_root?: string } }) =>
+            p.root_path === absPath ||
+            p.git?.canonical_root === absPath ||
+            p.git?.worktree_root === absPath
         );
         if (match) {
           projectName = match.name;
-        } else if (projects.length > 0) {
-          // Fallback to first project if exact path match is close
-          projectName = projects[0].name;
         }
       }
 
