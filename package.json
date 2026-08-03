@@ -1,11 +1,12 @@
 {
-  "name": "nexus",
+  "name": "nexus-mcp",
   "version": "0.1.0",
   "description": "Nexus - Standalone AST Knowledge Graph & Master End-to-End Flow Extraction Engine",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
     "nexus": "./dist/index.js",
+    "nexus-mcp": "./dist/mcp/index.js",
     "vidya": "./dist/index.js",
     "okf": "./dist/index.js"
   },
@@ -13,11 +14,12 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "mcp": "node dist/mcp/index.js",
-    "test": "node dist/index.js run ."
+    "test": "node dist/index.js run .",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "nexus",
-    "vidya",
+    "nexus-mcp",
     "knowledge-graph",
     "mcp",
     "mermaid",
@@ -26,7 +28,7 @@
     "docusaurus",
     "typescript-ast"
   ],
-  "author": "",
+  "author": "arsyaadi",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.2.0",

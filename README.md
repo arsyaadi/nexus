@@ -20,12 +20,35 @@ Nexus operates as a **Model Context Protocol (MCP) Server** designed to integrat
 
 ---
 
+## ⚡ Seamless 1-Line MCP Setup (Zero Installation)
+
+No need to `git clone` or build manually! Register Nexus MCP Server directly into your AI Host using `npx`:
+
+### **Claude Code (1-Line Command)**
+```bash
+claude mcp add nexus -- npx -y nexus-mcp
+```
+
+### **Antigravity / Cursor / Windsurf (`.mcp.json` / `mcp_config.json`)**
+```json
+{
+  "mcpServers": {
+    "nexus": {
+      "command": "npx",
+      "args": ["-y", "nexus-mcp"]
+    }
+  }
+}
+```
+
+---
+
 ## 🛠️ Generation Modes
 
 Nexus supports **two flexible generation modes**:
 
 ### Mode 1: Single Master E2E Flow (Recommended)
-- **Tool**: `nexus_generate_e2e` / CLI `nexus run .`
+- **Tool**: `nexus_generate_e2e` / CLI `npx nexus-mcp run .`
 - **Output**: Single unified file `.nexus/e2e_flow.md` exported as a single Word file `documentation.docx`.
 - **Use Case**: Instantly extract a single Master Mermaid E2E Flowchart covering the entire system from start to finish in one step.
 
@@ -33,43 +56,6 @@ Nexus supports **two flexible generation modes**:
 - **Tool**: `nexus_plan` + `nexus_save_module_doc`
 - **Output**: Granular per-module specifications (`.nexus/technical/*.md` & `.nexus/business/*.md`).
 - **Use Case**: Detailed architectural & business rules deep-dives for individual domain modules.
-
----
-
-## 🛠️ Prerequisites & Requirements
-
-1. **Node.js**: `v18.x` or higher.
-
----
-
-## 🚀 Installation & Setup
-
-### 1. Build Nexus Server
-```bash
-git clone https://github.com/arsyaadi/nexus.git
-cd nexus
-npm install
-npm run build
-```
-
-### 2. Register Nexus MCP Server
-
-#### **Claude Code**
-```bash
-claude mcp add nexus -- node /absolute/path/to/nexus/dist/mcp/index.js
-```
-
-#### **Antigravity / Cursor / Windsurf (`.mcp.json` / `mcp_config.json`)**
-```json
-{
-  "mcpServers": {
-    "nexus": {
-      "command": "node",
-      "args": ["/absolute/path/to/nexus/dist/mcp/index.js"]
-    }
-  }
-}
-```
 
 ---
 
@@ -142,23 +128,23 @@ AI Host Agent     ├─► 2. `nexus_plan` (Optional: Clusters Granular Capabil
 
 ## 🖥️ Standalone CLI Usage
 
-Nexus includes a standalone CLI for manual testing and pipeline automation:
+Run Nexus CLI on-demand via `npx`:
 
 ```bash
 # Index target repository via built-in AST provider
-nexus init /path/to/target-repo
+npx nexus-mcp init /path/to/target-repo
 
 # Generate Execution Plan
-nexus plan /path/to/target-repo
+npx nexus-mcp plan /path/to/target-repo
 
 # Run full workflow (Init → Master E2E Flow → Execute → .nexus)
-nexus run /path/to/target-repo
+npx nexus-mcp run /path/to/target-repo
 
 # Export .nexus package to Word (.docx)
-nexus export /path/to/target-repo --format docx --out ./export
+npx nexus-mcp export /path/to/target-repo --format docx --out ./export
 
 # Export .nexus package to Docusaurus site
-nexus export /path/to/target-repo --format docusaurus --out ./docs-site
+npx nexus-mcp export /path/to/target-repo --format docusaurus --out ./docs-site
 ```
 
 ---
