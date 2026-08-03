@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 
+import * as path from 'node:path';
 import { CodebaseAnalyzer, CodebaseMemoryProvider } from './analyzer/index.js';
 import { ModulePlanner } from './planner/index.js';
 import { ModuleExecutor } from './executor/index.js';
 import { OKFStorage } from './storage/index.js';
 import { OKFWorkflowOrchestrator, PlaceholderUserReview } from './workflow/index.js';
+import { DocusaurusExporter } from './exporter/docusaurusExporter.js';
+import { DocxExporter } from './exporter/docxExporter.js';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -15,14 +18,45 @@ async function main() {
 
   if (!command || command === '--help' || command === '-h') {
     console.log(`
-Usage: okf <command> [target-path]
+Usage: okf <command> [target-path] [options]
 
 Commands:
-  init <path>       Index target repository using codebase-memory-mcp
-  plan <path>       Generate Execution Plan from Knowledge Graph
-  run <path>        Execute full Workflow (Init → Plan → Review → Execute → .okf)
-  help              Show help information
+  init <path>                                   Index target repository using codebase-memory-mcp
+  plan <path>                                   Generate Execution Plan from Knowledge Graph
+  run <path>                                    Execute full Workflow (Init → Plan → Review → Execute → .okf)
+  export <path> --format <docusaurus|docx> --out <dir>   Export .okf package to Docusaurus or Word (.docx)
+  help                                          Show help information
 `);
+    return;
+  }
+
+  if (command === 'export') {
+    const formatArgIdx = args.indexOf('--format');
+    const format = formatArgIdx !== -1 ? args[formatArgIdx + 1] : 'docx';
+
+    const outArgIdx = args.indexOf('--out');
+    const outputDir = outArgIdx !== -1 ? args[outArgIdx + 1] : './export';
+
+    const titleArgIdx = args.indexOf('--title');
+    const title = titleArgIdx !== -1 ? args[titleArgIdx + 1] : 'OKF Documentation';
+
+    const okfDir = targetPath.endsWith('.okf') ? targetPath : path.join(targetPath, '.okf');
+
+    console.log(`\n--- Exporting .okf package at [${okfDir}] ---`);
+    console.log(`Format: ${format}, Output Directory: ${outputDir}`);
+
+    if (format === 'docusaurus') {
+      const exporter = new DocusaurusExporter();
+      await exporter.export({ okfDir, outputDir, title });
+    } else if (format === 'docx') {
+      const exporter = new DocxExporter();
+      await exporter.export({ okfDir, outputDir, title });
+    } else {
+      console.error(`Unsupported format: ${format}. Allowed formats: docusaurus, docx.`);
+      process.exit(1);
+    }
+
+    console.log('Export completed successfully.');
     return;
   }
 

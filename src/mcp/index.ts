@@ -10,6 +10,8 @@ import { CodebaseMemoryProvider } from '../analyzer/index.js';
 import { ModulePlanner } from '../planner/index.js';
 import { FileSystemOKFWriter } from '../storage/index.js';
 import { OKFMetadata } from '../types/index.js';
+import { DocusaurusExporter } from '../exporter/docusaurusExporter.js';
+import { DocxExporter } from '../exporter/docxExporter.js';
 
 const server = new Server(
   {
@@ -114,6 +116,34 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
           },
           required: ['repo_path', 'modules'],
+        },
+      },
+      {
+        name: 'okf_export',
+        description:
+          'ALWAYS use this tool whenever the user asks to export, convert, or generate Word documents (.docx) or Docusaurus sites from an .okf package or repository. DO NOT run external shell tools like pandoc, python, or libreoffice. Supported formats: docx (generates technical.docx and business.docx), docusaurus.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            target_dir: {
+              type: 'string',
+              description: 'Path to directory containing .okf package or target repo path (default: current workspace directory ".") ',
+            },
+            format: {
+              type: 'string',
+              enum: ['docusaurus', 'docx'],
+              description: 'Export format: "docx" for Word documents or "docusaurus" for site structure',
+            },
+            output_dir: {
+              type: 'string',
+              description: 'Output directory path for exported files (e.g., "./export" or "./docs")',
+            },
+            title: {
+              type: 'string',
+              description: 'Optional document/project title',
+            },
+          },
+          required: ['target_dir', 'format', 'output_dir'],
         },
       },
     ],
@@ -231,6 +261,39 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               message: `.okf package finalized successfully.`,
               metadataFile: path.join(repoPath, '.okf', 'metadata.json'),
               metadata,
+            }),
+          },
+        ],
+      };
+    }
+
+    if (name === 'okf_export') {
+      const targetDir = String(args?.target_dir || '.');
+      const format = String(args?.format || 'docx').toLowerCase();
+      const outputDir = String(args?.output_dir || './export');
+      const title = args?.title ? String(args.title) : 'OKF Documentation';
+
+      const okfDir = targetDir.endsWith('.okf') ? targetDir : path.join(targetDir, '.okf');
+
+      if (format === 'docusaurus') {
+        const exporter = new DocusaurusExporter();
+        await exporter.export({ okfDir, outputDir, title });
+      } else if (format === 'docx') {
+        const exporter = new DocxExporter();
+        await exporter.export({ okfDir, outputDir, title });
+      } else {
+        throw new Error(`Unsupported export format: ${format}. Allowed: docusaurus, docx.`);
+      }
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              status: 'success',
+              message: `Exported .okf package successfully using [${format}] format into [${outputDir}].`,
+              format,
+              outputDir,
             }),
           },
         ],

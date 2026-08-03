@@ -21,6 +21,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0"
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "docx": "^9.1.1"
   }
 }
