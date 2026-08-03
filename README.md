@@ -2,7 +2,7 @@
 
 > Turn source code into structured, reviewable knowledge packages (`.okf`) and publishable documentation (Word `.docx` & Docusaurus).
 
-OKF is an AI-first knowledge extraction engine. Instead of generating raw, unorganized markdown files, OKF analyzes codebases using AST knowledge graphs, groups functionality into capability-based modules, and generates versionable `.okf` packages complete with **Mermaid Sequence Diagrams** and **Business Flow Specifications**.
+OKF is a **100% standalone**, AI-first knowledge extraction engine. Instead of generating raw, unorganized markdown files, OKF analyzes codebases using a built-in AST knowledge graph analyzer (`LocalGraphProvider`), groups functionality into capability-based modules, and generates versionable `.okf` packages complete with **Mermaid Sequence Diagrams** and **Business Flow Specifications**.
 
 OKF operates as a **Model Context Protocol (MCP) Server** designed to work seamlessly alongside AI coding agents such as **Claude Code**, **Antigravity**, **Cursor**, and **Windsurf**.
 
@@ -10,10 +10,10 @@ OKF operates as a **Model Context Protocol (MCP) Server** designed to work seaml
 
 ## 🌟 Key Features
 
-- 🏗️ **AST Knowledge Graph Analysis**: Powered by `codebase-memory-mcp` to discover true architectural capability boundaries.
+- 🏗️ **Built-in Standalone AST Engine (`LocalGraphProvider`)**: Zero external dependencies! Parses TypeScript & JavaScript source code using TypeScript Compiler API out of the box.
 - 📐 **Technical Documentation**: Detailed technical specifications with **Mermaid Sequence Diagrams** (`sequenceDiagram`) detailing caller-callee interactions.
 - 📋 **Standardized Business Flow**: Inferred business rules, **Mermaid Flowcharts** (`flowchart TD`), actors matrix, prerequisites, step-by-step process breakdowns, and cross-module impact analysis.
-- 📄 **Native Word Exporter (`.docx`)**: Converts `.okf` packages into `technical.docx` and `business.docx`. Natively parses inline formatting, markdown tables, callouts, and renders process flow tables for diagrams—with **zero external dependencies** (no `pandoc` or `python` required).
+- 📄 **Native Word Exporter (`.docx`)**: Converts `.okf` packages into `technical.docx` and `business.docx`. Natively parses inline formatting, markdown tables, callouts, and renders process flow tables & visual PNG diagrams—with **zero external CLI dependencies** (no `pandoc` or `python` required).
 - 🌐 **Docusaurus Exporter**: Exports `.okf` packages into a ready-to-build Docusaurus documentation site with auto-generated `sidebars.ts` and `docusaurus.config.ts`.
 - 🔌 **MCP First**: Complete suite of MCP tools (`okf_plan`, `okf_get_module_context`, `okf_save_module_doc`, `okf_finalize`, `okf_export`).
 
@@ -22,7 +22,7 @@ OKF operates as a **Model Context Protocol (MCP) Server** designed to work seaml
 ## 🛠️ Prerequisites & Requirements
 
 1. **Node.js**: `v18.x` or higher.
-2. **Codebase Memory MCP**: OKF depends on [`codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp) to build AST knowledge graphs. Ensure it is installed and running on your system.
+2. *(Optional)* **Codebase Memory MCP**: OKF can optionally integrate with [`codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp) if available, but uses built-in `LocalGraphProvider` by default.
 
 ---
 
@@ -47,9 +47,6 @@ claude mcp add okf -- node /absolute/path/to/okf/dist/mcp/index.js
 ```json
 {
   "mcpServers": {
-    "codebase-memory-mcp": {
-      "command": "codebase-memory-mcp"
-    },
     "okf": {
       "command": "node",
       "args": ["/absolute/path/to/okf/dist/mcp/index.js"]
@@ -81,7 +78,7 @@ Once the OKF MCP Server is registered in your AI Host, you can trigger workflows
 ## 🔄 Interactive AI Agent Workflow
 
 ```
-                  ┌─► 1. `okf_plan` (Queries Graph & Clusters Capabilities)
+                  ┌─► 1. `okf_plan` (Analyzes AST & Clusters Capabilities)
                   │
 AI Host Agent     ├─► 2. Presents Execution Plan to User for Approval
  (Claude / AGY)   │
@@ -118,7 +115,7 @@ AI Host Agent     ├─► 2. Presents Execution Plan to User for Approval
   ```
   export/
   ├── technical.docx    # Styled Word document for technical specifications
-  └── business.docx     # Styled Word document for business flows & process tables
+  └── business.docx     # Styled Word document for business flows & PNG diagrams
   ```
 - **Docusaurus Format (`--format docusaurus`)**:
   ```
@@ -138,7 +135,7 @@ AI Host Agent     ├─► 2. Presents Execution Plan to User for Approval
 OKF includes a standalone CLI for manual testing and pipeline automation:
 
 ```bash
-# Index target repository via Codebase Memory MCP
+# Index target repository via built-in AST provider
 okf init /path/to/target-repo
 
 # Generate Execution Plan
@@ -160,7 +157,7 @@ okf export /path/to/target-repo --format docusaurus --out ./docs-site
 
 | MCP Tool | Description |
 |---|---|
-| `okf_plan` | Analyzes Knowledge Graph and returns module execution tasks. |
+| `okf_plan` | Analyzes AST Knowledge Graph and returns module execution tasks. |
 | `okf_get_module_context` | Returns source code context for a specific module task. |
 | `okf_save_module_doc` | Saves technical & draft business markdown files for a module. |
 | `okf_finalize` | Finalizes `.okf` package generation and writes `metadata.json`. |
