@@ -4,6 +4,9 @@ export interface Analyzer extends GraphProvider {
   analyze(repoPath: string): Promise<KnowledgeGraph>;
 }
 
+/**
+ * Mock GraphProvider implementation for testing & offline planning
+ */
 export class MockGraphProvider implements GraphProvider {
   async getKnowledgeGraph(_repoPath: string): Promise<KnowledgeGraph> {
     return {
@@ -45,6 +48,24 @@ export class MockGraphProvider implements GraphProvider {
   }
 }
 
+/**
+ * Placeholder CodebaseMemoryProvider
+ * Will connect to Codebase Memory MCP graph search/query API
+ */
+export class CodebaseMemoryProvider implements GraphProvider {
+  async getKnowledgeGraph(repoPath: string): Promise<KnowledgeGraph> {
+    console.log(`[CodebaseMemoryProvider] Connecting to Codebase Memory MCP for repository: ${repoPath}...`);
+    // Placeholder: Will call MCP search_graph / query_graph tools to extract AST graph
+    return {
+      nodes: [],
+      edges: [],
+    };
+  }
+}
+
+/**
+ * High-level Analyzer wrapper that accepts any GraphProvider implementation
+ */
 export class CodebaseAnalyzer implements Analyzer {
   private provider: GraphProvider;
 
