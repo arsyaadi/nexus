@@ -44,6 +44,7 @@ export interface ModuleTask {
  * Graph Provider Interface
  */
 export interface GraphProvider {
+  indexRepository?(repoPath: string): Promise<void>;
   getKnowledgeGraph(repoPath: string): Promise<KnowledgeGraph>;
 }
 
