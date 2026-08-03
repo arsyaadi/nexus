@@ -27,7 +27,7 @@ export class CodebaseMemoryProvider implements GraphProvider {
 
   async indexRepository(repoPath: string, mode: 'full' | 'moderate' | 'fast' = 'full'): Promise<void> {
     const absPath = path.resolve(repoPath);
-    console.log(`[CodebaseMemoryProvider] Triggering repo indexing for: ${absPath} (mode: ${mode})...`);
+    console.error(`[CodebaseMemoryProvider] Triggering repo indexing for: ${absPath} (mode: ${mode})...`);
 
     const { client, transport } = await this.createClient();
     try {
@@ -37,11 +37,11 @@ export class CodebaseMemoryProvider implements GraphProvider {
       })) as { isError?: boolean; content: Array<{ type: string; text: string }> };
 
       const contentText = response.content?.[0]?.text || '';
-      console.log(`[CodebaseMemoryProvider] Indexing response:`, contentText);
+      console.error(`[CodebaseMemoryProvider] Indexing response:`, contentText);
 
       if (response.isError || contentText.includes('"status":"error"')) {
         if (mode !== 'fast') {
-          console.warn(`[CodebaseMemoryProvider] Indexing mode '${mode}' failed. Retrying with mode 'fast'...`);
+          console.error(`[CodebaseMemoryProvider] Indexing mode '${mode}' failed. Retrying with mode 'fast'...`);
           await transport.close();
           return this.indexRepository(repoPath, 'fast');
         }
@@ -90,7 +90,7 @@ export class CodebaseMemoryProvider implements GraphProvider {
         throw new Error(`Project not found in Codebase Memory index for path: ${absPath}. Run 'okf init ${repoPath}' first.`);
       }
 
-      console.log(`[CodebaseMemoryProvider] Reading Knowledge Graph for project: ${projectName}...`);
+      console.error(`[CodebaseMemoryProvider] Reading Knowledge Graph for project: ${projectName}...`);
 
       // Step 2: Query Graph Nodes
       const nodesResult = (await client.callTool({
@@ -139,7 +139,7 @@ export class CodebaseMemoryProvider implements GraphProvider {
         }
       }
 
-      console.log(`[CodebaseMemoryProvider] Loaded ${nodes.length} nodes and ${edges.length} edges.`);
+      console.error(`[CodebaseMemoryProvider] Loaded ${nodes.length} nodes and ${edges.length} edges.`);
       return { nodes, edges };
     } finally {
       await transport.close();
