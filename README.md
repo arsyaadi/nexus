@@ -2,7 +2,7 @@
 
 > Turn source code into structured, reviewable knowledge packages (`.okf`) and publishable documentation (Word `.docx` & Docusaurus).
 
-OKF is a **100% standalone**, AI-first knowledge extraction engine. Instead of generating raw, unorganized markdown files, OKF analyzes codebases using a built-in AST knowledge graph analyzer (`LocalGraphProvider`), groups functionality into capability-based modules, and generates versionable `.okf` packages complete with **Mermaid Sequence Diagrams** and **Business Flow Specifications**.
+OKF is a **100% standalone**, AI-first knowledge extraction engine. Instead of generating raw, unorganized markdown files, OKF analyzes codebases using a built-in AST knowledge graph analyzer (`LocalGraphProvider`), constructs **End-to-End System Core Flows**, groups functionality into capability-based modules, and generates versionable `.okf` packages complete with **Master Mermaid Flowcharts** and **Business Specifications**.
 
 OKF operates as a **Model Context Protocol (MCP) Server** designed to work seamlessly alongside AI coding agents such as **Claude Code**, **Antigravity**, **Cursor**, and **Windsurf**.
 
@@ -10,12 +10,29 @@ OKF operates as a **Model Context Protocol (MCP) Server** designed to work seaml
 
 ## 🌟 Key Features
 
-- 🏗️ **Built-in Standalone AST Engine (`LocalGraphProvider`)**: Zero external dependencies! Parses TypeScript & JavaScript source code using TypeScript Compiler API out of the box.
-- 📐 **Technical Documentation**: Detailed technical specifications with **Mermaid Sequence Diagrams** (`sequenceDiagram`) detailing caller-callee interactions.
-- 📋 **Standardized Business Flow**: Inferred business rules, **Mermaid Flowcharts** (`flowchart TD`), actors matrix, prerequisites, step-by-step process breakdowns, and cross-module impact analysis.
-- 📄 **Native Word Exporter (`.docx`)**: Converts `.okf` packages into `technical.docx` and `business.docx`. Natively parses inline formatting, markdown tables, callouts, and renders process flow tables & visual PNG diagrams—with **zero external CLI dependencies** (no `pandoc` or `python` required).
-- 🌐 **Docusaurus Exporter**: Exports `.okf` packages into a ready-to-build Docusaurus documentation site with auto-generated `sidebars.ts` and `docusaurus.config.ts`.
-- 🔌 **MCP First**: Complete suite of MCP tools (`okf_plan`, `okf_get_module_context`, `okf_save_module_doc`, `okf_finalize`, `okf_export`).
+- 🏗️ **Built-in Standalone AST Engine (`LocalGraphProvider`)**: Zero external service dependencies! Parses TypeScript & JavaScript source code using TypeScript Compiler API out of the box.
+- ⚡ **Single-Step Master E2E Flow Engine (`okf_generate_e2e`)**: Analyzes the entire codebase Knowledge Graph and generates **ONE Master Mermaid E2E Flowchart** (`flowchart TD`) connecting all components from entry point to storage in ONE step.
+- 📐 **Technical & Business Specifications**: Technical contracts with **Mermaid Sequence Diagrams** and standardized business flows with **Mermaid Flowcharts**.
+- 🛡️ **Mermaid Auto-Injection Safeguard**: Guarantees valid visual Mermaid process diagrams in every documentation output.
+- 📄 **Native Word Exporter (`.docx`)**: Converts `.okf` packages into a single unified `documentation.docx` file. Natively parses inline formatting, markdown tables, callouts, and embeds visual PNG process flow diagrams with **zero external CLI dependencies** (no `pandoc` or `python` required).
+- 🌐 **Docusaurus Exporter**: Exports `.okf` packages into a ready-to-build Docusaurus documentation site with `docs/e2e-flow.md` auto-configured at the top of `sidebars.ts`.
+- 🔌 **MCP First**: Complete suite of MCP tools (`okf_generate_e2e`, `okf_plan`, `okf_get_module_context`, `okf_save_module_doc`, `okf_finalize`, `okf_export`).
+
+---
+
+## 🛠️ Generation Modes
+
+OKF supports **two flexible generation modes**:
+
+### Mode 1: Single Master E2E Flow (Recommended)
+- **Tool**: `okf_generate_e2e` / CLI `okf run .`
+- **Output**: Single unified file `.okf/e2e_flow.md` exported as a single Word file `documentation.docx`.
+- **Use Case**: Instantly extract a single Master Mermaid E2E Flowchart covering the entire system from start to finish in one step.
+
+### Mode 2: Capability Module Deep-Dives
+- **Tool**: `okf_plan` + `okf_save_module_doc`
+- **Output**: Granular per-module specifications (`.okf/technical/*.md` & `.okf/business/*.md`).
+- **Use Case**: Detailed architectural & business rules deep-dives for individual domain modules.
 
 ---
 
@@ -62,35 +79,30 @@ Once the OKF MCP Server is registered in your AI Host, you can trigger workflows
 
 ### Example Prompts
 
-#### **1. Full Knowledge Extraction**
+#### **1. Single-Step E2E Flow Generation (Master Mermaid Diagram)**
+> *"Run `okf_generate_e2e` to extract a single Master E2E Mermaid Flowchart for this repository."*
+
+#### **2. Full Module Knowledge Extraction**
 > *"Analyze this repository and extract all capability knowledge into a `.okf` package."*
 
-#### **2. Export Documentation**
+#### **3. Export Documentation to Word (.docx)**
 > *"Export the `.okf` documentation package to Microsoft Word (`.docx`) in `./export`."*
-> *"Export OKF documentation to a Docusaurus site structure in `./docs-site`."*
 
-#### **3. Combined Extraction & Export**
-> *"Analyze this codebase, generate `.okf` documentation, and export it into `.docx` format."*
+#### **4. Export to Docusaurus Site**
+> *"Export OKF documentation to a Docusaurus site structure in `./docs-site`."*
 
 ---
 
-## 🔄 Interactive AI Agent Workflow
+## 🔄 AI Agent Workflow Architecture
 
 ```
-                  ┌─► 1. `okf_plan` (Analyzes AST & Clusters Capabilities)
+                  ┌─► 1. `okf_generate_e2e` (Generates Master E2E Mermaid Flowchart in ONE step)
                   │
-AI Host Agent     ├─► 2. Presents Execution Plan to User for Approval
+AI Host Agent     ├─► 2. `okf_plan` (Optional: Clusters Granular Capability Modules)
  (Claude / AGY)   │
-                  ├─► 3. User Approves ("Looks good, proceed!")
+                  ├─► 3. `okf_save_module_doc` (Optional: Saves per-module deep dives)
                   │
-                  ├─► 4. Loop Modules:
-                  │      ├── `okf_get_module_context` (Fetches minimal code context)
-                  │      ├── AI Agent Reasons & Generates Standardized Docs
-                  │      └── `okf_save_module_doc` (Saves markdown files)
-                  │
-                  ├─► 5. `okf_finalize` (Generates `.okf/metadata.json`)
-                  │
-                  └─► 6. `okf_export` (Exports to Word `.docx` or Docusaurus)
+                  └─► 4. `okf_export` (Exports to Word `documentation.docx` or Docusaurus)
 ```
 
 ---
@@ -100,12 +112,11 @@ AI Host Agent     ├─► 2. Presents Execution Plan to User for Approval
 ### 1. `.okf` Package Directory Structure
 ```
 .okf/
+├── e2e_flow.md          # Unified Master E2E Flow & Master Mermaid Flowchart
 ├── technical/
-│   ├── buyback.md       # Technical specification & Mermaid sequence diagram
-│   └── invoice.md
+│   └── buyback.md       # Technical specification & Mermaid sequence diagram
 ├── business/
-│   ├── buyback.md       # Standardized business flow & Mermaid flowchart (marked DRAFT)
-│   └── invoice.md
+│   └── buyback.md       # Standardized business flow & Mermaid flowchart (marked DRAFT)
 └── metadata.json        # Execution timestamp, version & module index
 ```
 
@@ -113,13 +124,13 @@ AI Host Agent     ├─► 2. Presents Execution Plan to User for Approval
 - **Word Format (`--format docx`)**:
   ```
   export/
-  ├── technical.docx    # Styled Word document for technical specifications
-  └── business.docx     # Styled Word document for business flows & PNG diagrams
+  └── documentation.docx # Single Word document with Master E2E Flowchart PNG image
   ```
 - **Docusaurus Format (`--format docusaurus`)**:
   ```
   export/
   ├── docs/
+  │   ├── e2e-flow.md    # Primary Master E2E Flowchart page
   │   ├── technical/
   │   └── business/
   ├── sidebars.ts
@@ -140,7 +151,7 @@ okf init /path/to/target-repo
 # Generate Execution Plan
 okf plan /path/to/target-repo
 
-# Run full workflow (Init → Plan → Execute → .okf)
+# Run full workflow (Init → Master E2E Flow → Execute → .okf)
 okf run /path/to/target-repo
 
 # Export .okf package to Word (.docx)
@@ -156,11 +167,12 @@ okf export /path/to/target-repo --format docusaurus --out ./docs-site
 
 | MCP Tool | Description |
 |---|---|
+| `okf_generate_e2e` | **Primary Single-Step Tool**: Analyzes repository and generates ONE Master E2E Mermaid Flowchart and unified `.okf/e2e_flow.md` document in 1 step. |
 | `okf_plan` | Analyzes AST Knowledge Graph and returns module execution tasks. |
 | `okf_get_module_context` | Returns source code context for a specific module task. |
-| `okf_save_module_doc` | Saves technical & draft business markdown files for a module. |
+| `okf_save_module_doc` | Saves technical & draft business markdown files for a module (with Mermaid auto-injection safeguard). |
 | `okf_finalize` | Finalizes `.okf` package generation and writes `metadata.json`. |
-| `okf_export` | Exports `.okf` package to Word (`docx`) or Docusaurus format. |
+| `okf_export` | Exports `.okf` package to single Word (`documentation.docx`) or Docusaurus format. |
 
 ---
 
