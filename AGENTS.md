@@ -36,9 +36,10 @@ Implement only:
 - Repository analysis
 - Planning
 - Task execution
-- Technical documentation
-- Draft business flow
+- Technical documentation (with Mermaid Sequence Diagrams)
+- Draft business flow (with Mermaid Flowcharts)
 - `.okf` generation
+- Exporting (`docx`, `docusaurus` via `okf_export`)
 
 Everything else belongs to future milestones.
 
@@ -54,19 +55,30 @@ Knowledge Graph
 
 ↓
 
-Planning
+Planning (`okf_plan`)
 
 ↓
 
-User Review
+Module Execution (`okf_get_module_context` → `okf_save_module_doc`)
 
 ↓
 
-Execution
+Finalize `.okf` (`okf_finalize`)
 
 ↓
 
-.okf
+Export (`okf_export` → `docx` / `docusaurus`)
+
+---
+
+# Export Execution Rule
+
+When the user asks to export or convert `.okf` to `docx` or `docusaurus`:
+
+1. **ALWAYS** use the MCP tool `okf_export` (via `ServerName: "okf"`, `ToolName: "okf_export"`), OR run CLI: `node dist/index.js export . --format docx --out <dir>`.
+2. **NEVER** run external conversion tools such as `pandoc`, `python`, or `libreoffice`.
+
+---
 
 Never skip the planning phase.
 
