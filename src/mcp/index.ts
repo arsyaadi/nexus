@@ -6,7 +6,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
 
-import { CodebaseMemoryProvider } from '../analyzer/index.js';
+import { CodebaseAnalyzer, CodebaseMemoryProvider, LocalGraphProvider } from '../analyzer/index.js';
 import { ModulePlanner } from '../planner/index.js';
 import { FileSystemOKFWriter } from '../storage/index.js';
 import { OKFMetadata } from '../types/index.js';
@@ -157,9 +157,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     if (name === 'okf_plan') {
       const repoPath = String(args?.repo_path || '.');
-      const provider = new CodebaseMemoryProvider();
+      const analyzer = new CodebaseAnalyzer();
 
-      const graph = await provider.getKnowledgeGraph(repoPath);
+      const graph = await analyzer.getKnowledgeGraph(repoPath);
       const plan = await planner.createPlan(graph, repoPath);
 
       return {
