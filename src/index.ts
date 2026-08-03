@@ -4,8 +4,8 @@ import * as path from 'node:path';
 import { CodebaseAnalyzer } from './analyzer/index.js';
 import { ModulePlanner } from './planner/index.js';
 import { ModuleExecutor } from './executor/index.js';
-import { OKFStorage } from './storage/index.js';
-import { OKFWorkflowOrchestrator, PlaceholderUserReview } from './workflow/index.js';
+import { VidyaStorage } from './storage/index.js';
+import { VidyaWorkflowOrchestrator, PlaceholderUserReview } from './workflow/index.js';
 import { DocusaurusExporter } from './exporter/docusaurusExporter.js';
 import { DocxExporter } from './exporter/docxExporter.js';
 
@@ -14,17 +14,17 @@ async function main() {
   const command = args[0];
   const targetPath = args.find((a) => !a.startsWith('-') && a !== command) || '.';
 
-  console.log('OKF - Knowledge Extraction Engine');
+  console.log('Vidya - Standalone Knowledge Graph & Flow Engine');
 
   if (!command || command === '--help' || command === '-h') {
     console.log(`
-Usage: okf <command> [target-path] [options]
+Usage: vidya <command> [target-path] [options]
 
 Commands:
-  init <path>                                   Index target repository using codebase-memory-mcp
+  init <path>                                   Index target repository AST
   plan <path>                                   Generate Execution Plan from Knowledge Graph
-  run <path>                                    Execute full Workflow (Init → Plan → Review → Execute → .okf)
-  export <path> --format <docusaurus|docx> --out <dir>   Export .okf package to Docusaurus or Word (.docx)
+  run <path>                                    Execute full Workflow (Init → E2E Flow → Review → .vidya)
+  export <path> --format <docusaurus|docx> --out <dir>   Export .vidya package to Docusaurus or Word (.docx)
   help                                          Show help information
 `);
     return;
@@ -38,19 +38,21 @@ Commands:
     const outputDir = outArgIdx !== -1 ? args[outArgIdx + 1] : './export';
 
     const titleArgIdx = args.indexOf('--title');
-    const title = titleArgIdx !== -1 ? args[titleArgIdx + 1] : 'OKF Documentation';
+    const title = titleArgIdx !== -1 ? args[titleArgIdx + 1] : 'Vidya End-to-End Documentation';
 
-    const okfDir = targetPath.endsWith('.okf') ? targetPath : path.join(targetPath, '.okf');
+    const vidyaDir = targetPath.endsWith('.vidya') || targetPath.endsWith('.okf') 
+      ? targetPath 
+      : path.join(targetPath, '.vidya');
 
-    console.log(`\n--- Exporting .okf package at [${okfDir}] ---`);
+    console.log(`\n--- Exporting Vidya package at [${vidyaDir}] ---`);
     console.log(`Format: ${format}, Output Directory: ${outputDir}`);
 
     if (format === 'docusaurus') {
       const exporter = new DocusaurusExporter();
-      await exporter.export({ okfDir, outputDir, title });
+      await exporter.export({ vidyaDir, outputDir, title });
     } else if (format === 'docx') {
       const exporter = new DocxExporter();
-      await exporter.export({ okfDir, outputDir, title });
+      await exporter.export({ vidyaDir, outputDir, title });
     } else {
       console.error(`Unsupported format: ${format}. Allowed formats: docusaurus, docx.`);
       process.exit(1);
@@ -89,12 +91,12 @@ Commands:
   }
 
   if (command === 'run' || command === 'analyze') {
-    const orchestrator = new OKFWorkflowOrchestrator({
+    const orchestrator = new VidyaWorkflowOrchestrator({
       graphProvider: analyzer,
       planner: new ModulePlanner(),
       reviewer: new PlaceholderUserReview(),
       executor: new ModuleExecutor(),
-      storage: new OKFStorage(),
+      storage: new VidyaStorage(),
     });
 
     await orchestrator.run(targetPath);

@@ -3,7 +3,7 @@ import {
   GraphProvider,
   ExecutionPlan,
   UserReviewHandler,
-  OKFMetadata,
+  VidyaMetadata,
 } from '../types/index.js';
 import { TaskExecutor } from '../executor/index.js';
 import { Planner, E2EFlowGenerator } from '../planner/index.js';
@@ -26,7 +26,7 @@ export interface WorkflowOptions {
   storage: StorageManager;
 }
 
-export class OKFWorkflowOrchestrator {
+export class VidyaWorkflowOrchestrator {
   private graphProvider: GraphProvider;
   private planner: Planner;
   private reviewer: UserReviewHandler;
@@ -41,8 +41,8 @@ export class OKFWorkflowOrchestrator {
     this.storage = options.storage;
   }
 
-  async run(repoPath: string): Promise<OKFMetadata> {
-    console.log(`=== Starting OKF Workflow for: ${repoPath} ===\n`);
+  async run(repoPath: string): Promise<VidyaMetadata> {
+    console.log(`=== Starting Vidya Workflow for: ${repoPath} ===\n`);
 
     // Stage 1: Extract Knowledge Graph
     console.log(`[Workflow: Stage 1] Extracting Knowledge Graph...`);
@@ -68,10 +68,10 @@ export class OKFWorkflowOrchestrator {
     }
 
     // Stage 5: Task Execution & Single E2E + Package Generation
-    console.log(`[Workflow: Stage 5] Initializing .okf package directory...`);
-    await this.storage.initOKFDir(repoPath);
+    console.log(`[Workflow: Stage 5] Initializing .vidya package directory...`);
+    await this.storage.initVidyaDir(repoPath);
 
-    console.log(`[Workflow: Stage 5.1] Writing Single Unified E2E Document (.okf/e2e_flow.md)...`);
+    console.log(`[Workflow: Stage 5.1] Writing Single Unified E2E Document (.vidya/e2e_flow.md)...`);
     await this.storage.writeE2EFlow(repoPath, e2eFlow.markdownContent);
 
     console.log(`[Workflow: Stage 5.2] Executing tasks module-by-module...`);
@@ -84,9 +84,9 @@ export class OKFWorkflowOrchestrator {
       processedModules.push(task.moduleName);
     }
 
-    // Stage 6: Finalize Package (.okf metadata generation)
-    console.log(`[Workflow: Stage 6] Finalizing .okf package & metadata.json...`);
-    const metadata: OKFMetadata = {
+    // Stage 6: Finalize Package (.vidya metadata generation)
+    console.log(`[Workflow: Stage 6] Finalizing .vidya package & metadata.json...`);
+    const metadata: VidyaMetadata = {
       version: '0.1.0',
       generatedAt: new Date().toISOString(),
       repoPath,
@@ -94,8 +94,10 @@ export class OKFWorkflowOrchestrator {
     };
 
     await this.storage.writeMetadata(repoPath, metadata);
-    console.log(`\n=== OKF Workflow Completed Successfully! ===`);
+    console.log(`\n=== Vidya Workflow Completed Successfully! ===`);
 
     return metadata;
   }
 }
+
+export type OKFWorkflowOrchestrator = VidyaWorkflowOrchestrator;

@@ -1,18 +1,24 @@
-import { OKFMetadata } from '../types/index.js';
+import { VidyaMetadata } from '../types/index.js';
 
-export interface OKFExporterOptions {
-  okfDir: string;
+export interface VidyaExporterOptions {
+  vidyaDir: string;
   outputDir: string;
   title?: string;
 }
 
-export interface OKFExporter {
-  export(options: OKFExporterOptions): Promise<void>;
+export type OKFExporterOptions = VidyaExporterOptions & { okfDir?: string };
+
+export interface VidyaExporter {
+  export(options: VidyaExporterOptions): Promise<void>;
 }
 
-export interface OKFPackageData {
-  metadata: OKFMetadata;
+export type OKFExporter = VidyaExporter;
+
+export interface VidyaPackageData {
+  metadata: VidyaMetadata;
   e2eFlowContent?: string;
   technicalDocs: Map<string, string>; // filename -> markdown content
   businessDocs: Map<string, string>;  // filename -> markdown content
 }
+
+export type OKFPackageData = VidyaPackageData;

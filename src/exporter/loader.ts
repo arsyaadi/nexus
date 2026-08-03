@@ -1,18 +1,31 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import { OKFPackageData } from './index.js';
-import { OKFMetadata } from '../types/index.js';
+import { VidyaPackageData } from './index.js';
+import { VidyaMetadata } from '../types/index.js';
 
-export async function loadOKFPackage(okfDir: string): Promise<OKFPackageData> {
-  let metadata: OKFMetadata = {
+export async function loadVidyaPackage(targetDir: string): Promise<VidyaPackageData> {
+  // Check for .vidya dir first, fallback to .okf dir
+  let pkgDir = targetDir;
+  if (!pkgDir.endsWith('.vidya') && !pkgDir.endsWith('.okf')) {
+    try {
+      const vidyaStat = await fs.stat(path.join(targetDir, '.vidya'));
+      if (vidyaStat.isDirectory()) {
+        pkgDir = path.join(targetDir, '.vidya');
+      }
+    } catch {
+      pkgDir = path.join(targetDir, '.okf');
+    }
+  }
+
+  let metadata: VidyaMetadata = {
     version: '0.1.0',
     generatedAt: new Date().toISOString(),
-    repoPath: okfDir,
+    repoPath: targetDir,
     modules: []
   };
 
   try {
-    const metadataPath = path.join(okfDir, 'metadata.json');
+    const metadataPath = path.join(pkgDir, 'metadata.json');
     const metadataRaw = await fs.readFile(metadataPath, 'utf-8');
     metadata = JSON.parse(metadataRaw);
   } catch {
@@ -21,14 +34,14 @@ export async function loadOKFPackage(okfDir: string): Promise<OKFPackageData> {
 
   let e2eFlowContent: string | undefined;
   try {
-    const e2ePath = path.join(okfDir, 'e2e_flow.md');
+    const e2ePath = path.join(pkgDir, 'e2e_flow.md');
     e2eFlowContent = await fs.readFile(e2ePath, 'utf-8');
   } catch {
     // Optional if not generated yet
   }
 
   const technicalDocs = new Map<string, string>();
-  const techDir = path.join(okfDir, 'technical');
+  const techDir = path.join(pkgDir, 'technical');
   try {
     const files = await fs.readdir(techDir);
     for (const file of files) {
@@ -42,7 +55,7 @@ export async function loadOKFPackage(okfDir: string): Promise<OKFPackageData> {
   }
 
   const businessDocs = new Map<string, string>();
-  const bizDir = path.join(okfDir, 'business');
+  const bizDir = path.join(pkgDir, 'business');
   try {
     const files = await fs.readdir(bizDir);
     for (const file of files) {
@@ -62,3 +75,5 @@ export async function loadOKFPackage(okfDir: string): Promise<OKFPackageData> {
     businessDocs
   };
 }
+
+export const loadOKFPackage = loadVidyaPackage;

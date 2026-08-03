@@ -13,13 +13,14 @@ import {
   TextRun,
   WidthType
 } from 'docx';
-import { OKFExporter, OKFExporterOptions } from './index.js';
-import { loadOKFPackage } from './loader.js';
+import { VidyaExporter, VidyaExporterOptions } from './index.js';
+import { loadVidyaPackage } from './loader.js';
 
-export class DocxExporter implements OKFExporter {
-  async export(options: OKFExporterOptions): Promise<void> {
-    const { okfDir, outputDir, title = 'OKF End-to-End Documentation' } = options;
-    const pkg = await loadOKFPackage(okfDir);
+export class DocxExporter implements VidyaExporter {
+  async export(options: VidyaExporterOptions): Promise<void> {
+    const targetDir = options.vidyaDir || (options as any).okfDir || '.';
+    const { outputDir, title = 'Vidya End-to-End Documentation' } = options;
+    const pkg = await loadVidyaPackage(targetDir);
 
     await fs.mkdir(outputDir, { recursive: true });
 

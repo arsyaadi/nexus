@@ -74,11 +74,13 @@ export interface ModuleDocOutput {
 }
 
 /**
- * .okf/metadata.json structure
+ * .vidya/metadata.json structure
  */
-export interface OKFMetadata {
+export interface VidyaMetadata {
   version: string;
   generatedAt: string;
   repoPath: string;
   modules: string[];
 }
+
+export type OKFMetadata = VidyaMetadata;
