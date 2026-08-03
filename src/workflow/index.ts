@@ -10,7 +10,7 @@ import { StorageManager } from '../storage/index.js';
 
 export class PlaceholderUserReview implements UserReviewHandler {
   async reviewPlan(plan: ExecutionPlan): Promise<boolean> {
-    console.log(`\n[Workflow: Stage 4 - User Review]`);
+    console.log(`\n[Workflow: Stage 3 - User Review]`);
     console.log(`Execution Plan containing ${plan.tasks.length} modules reviewed.`);
     console.log(`Status: APPROVED (Placeholder auto-approve)\n`);
     return true;
@@ -43,28 +43,27 @@ export class OKFWorkflowOrchestrator {
   async run(repoPath: string): Promise<OKFMetadata> {
     console.log(`=== Starting OKF Phase 1 Workflow for: ${repoPath} ===\n`);
 
-    // Stage 1: Initialize Storage
-    console.log(`[Workflow: Stage 1] Initializing .okf directory structure...`);
-    await this.storage.initOKFDir(repoPath);
-
-    // Stage 2: Extract Knowledge Graph
-    console.log(`[Workflow: Stage 2] Extracting Knowledge Graph...`);
+    // Stage 1: Extract Knowledge Graph
+    console.log(`[Workflow: Stage 1] Extracting Knowledge Graph...`);
     const graph = await this.graphProvider.getKnowledgeGraph(repoPath);
     console.log(`Knowledge Graph loaded (${graph.nodes.length} nodes, ${graph.edges.length} edges).`);
 
-    // Stage 3: Planning
-    console.log(`[Workflow: Stage 3] Generating Execution Plan...`);
+    // Stage 2: Planning
+    console.log(`[Workflow: Stage 2] Generating Execution Plan...`);
     const plan = await this.planner.createPlan(graph, repoPath);
     console.log(`Plan generated (${plan.tasks.length} capability modules).`);
 
-    // Stage 4: User Review
-    console.log(`[Workflow: Stage 4] Requesting User Review...`);
+    // Stage 3: User Review
+    console.log(`[Workflow: Stage 3] Requesting User Review...`);
     const isApproved = await this.reviewer.reviewPlan(plan);
     if (!isApproved) {
       throw new Error('Workflow aborted: Execution Plan was rejected during User Review.');
     }
 
-    // Stage 5: Task Execution
+    // Stage 4: Task Execution & .okf Generation (Only after approval!)
+    console.log(`[Workflow: Stage 4] User approved. Initializing .okf directory...`);
+    await this.storage.initOKFDir(repoPath);
+
     console.log(`[Workflow: Stage 5] Executing tasks module-by-module...`);
     const processedModules: string[] = [];
 
@@ -75,7 +74,7 @@ export class OKFWorkflowOrchestrator {
       processedModules.push(task.moduleName);
     }
 
-    // Stage 6: Package (.okf metadata generation)
+    // Stage 5: Finalize Package (.okf metadata generation)
     console.log(`[Workflow: Stage 6] Finalizing .okf package & metadata.json...`);
     const metadata: OKFMetadata = {
       version: '0.1.0',
