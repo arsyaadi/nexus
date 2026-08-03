@@ -1,5 +1,5 @@
 {
-  "name": "@arsyaadi/nexus-mcp",
+  "name": "@arstzy/nexus-mcp",
   "version": "0.1.0",
   "description": "Nexus - Standalone AST Knowledge Graph & Master End-to-End Flow Extraction Engine",
   "main": "dist/index.js",

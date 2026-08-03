@@ -24,7 +24,7 @@ Nexus operates as a Model Context Protocol (MCP) Server for Claude Code, Antigra
 
 ### Claude Code
 ```bash
-claude mcp add nexus -- npx -y @arsyaadi/nexus-mcp
+claude mcp add nexus -- npx -y @arstzy/nexus-mcp
 ```
 
 ### Antigravity / Cursor / Windsurf (`.mcp.json` / `mcp_config.json`)
@@ -33,7 +33,7 @@ claude mcp add nexus -- npx -y @arsyaadi/nexus-mcp
   "mcpServers": {
     "nexus": {
       "command": "npx",
-      "args": ["-y", "@arsyaadi/nexus-mcp"]
+      "args": ["-y", "@arstzy/nexus-mcp"]
     }
   }
 }
