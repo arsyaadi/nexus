@@ -1,36 +1,54 @@
 #!/usr/bin/env node
 
-import { CodebaseAnalyzer } from './analyzer/index.js';
+import { CodebaseAnalyzer, MockGraphProvider, CodebaseMemoryProvider } from './analyzer/index.js';
 import { ModulePlanner } from './planner/index.js';
 import { ModuleExecutor } from './executor/index.js';
 import { OKFStorage } from './storage/index.js';
 import { OKFWorkflowOrchestrator, PlaceholderUserReview } from './workflow/index.js';
+import { GraphProvider } from './types/index.js';
 
 async function main() {
   const args = process.argv.slice(2);
   const command = args[0];
+  const isMock = args.includes('--mock');
+  const targetPath = args.find((a) => !a.startsWith('-') && a !== command) || '.';
 
   console.log('OKF - Knowledge Extraction Engine (Phase 1 MVP)');
 
   if (!command || command === '--help' || command === '-h') {
     console.log(`
-Usage: okf <command> [options]
+Usage: okf <command> [target-path] [options]
 
 Commands:
-  run <path>        Execute full Phase 1 Workflow (Graph → Plan → Review → Execute → .okf)
-  plan <path>       Generate Execution Plan only
+  init <path>       Index target repository using codebase-memory-mcp
+  plan <path>       Generate Execution Plan from Knowledge Graph
+  run <path>        Execute full Phase 1 Workflow (Init → Plan → Review → Execute → .okf)
   help              Show help information
+
+Options:
+  --mock            Use in-memory MockGraphProvider instead of Codebase Memory
 `);
     return;
   }
 
+  const provider: GraphProvider = isMock ? new MockGraphProvider() : new CodebaseMemoryProvider();
+  const analyzer = new CodebaseAnalyzer(provider);
+
+  if (command === 'init') {
+    console.log(`\n--- Initializing & Indexing Repository at: ${targetPath} ---`);
+    if (analyzer.indexRepository) {
+      await analyzer.indexRepository(targetPath);
+      console.log('Indexing initiated successfully.');
+    } else {
+      console.log('Current provider does not support indexing.');
+    }
+    return;
+  }
+
   if (command === 'plan') {
-    const targetPath = args[1] || '.';
-    console.log(`\n--- Analyzing Knowledge Graph at: ${targetPath} ---`);
+    console.log(`\n--- Analyzing Knowledge Graph at: ${targetPath} (${isMock ? 'Mock' : 'Codebase Memory'}) ---`);
 
-    const analyzer = new CodebaseAnalyzer();
     const planner = new ModulePlanner();
-
     const graph = await analyzer.analyze(targetPath);
     const plan = await planner.createPlan(graph, targetPath);
 
@@ -47,10 +65,8 @@ Commands:
   }
 
   if (command === 'run' || command === 'analyze') {
-    const targetPath = args[1] || '.';
-
     const orchestrator = new OKFWorkflowOrchestrator({
-      graphProvider: new CodebaseAnalyzer(),
+      graphProvider: analyzer,
       planner: new ModulePlanner(),
       reviewer: new PlaceholderUserReview(),
       executor: new ModuleExecutor(),

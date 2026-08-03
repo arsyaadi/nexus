@@ -1,4 +1,7 @@
 import { KnowledgeGraph, GraphProvider } from '../types/index.js';
+import { CodebaseMemoryProvider } from './codebaseMemoryProvider.js';
+
+export { CodebaseMemoryProvider };
 
 export interface Analyzer extends GraphProvider {
   analyze(repoPath: string): Promise<KnowledgeGraph>;
@@ -49,28 +52,19 @@ export class MockGraphProvider implements GraphProvider {
 }
 
 /**
- * Placeholder CodebaseMemoryProvider
- * Will connect to Codebase Memory MCP graph search/query API
- */
-export class CodebaseMemoryProvider implements GraphProvider {
-  async getKnowledgeGraph(repoPath: string): Promise<KnowledgeGraph> {
-    console.log(`[CodebaseMemoryProvider] Connecting to Codebase Memory MCP for repository: ${repoPath}...`);
-    // Placeholder: Will call MCP search_graph / query_graph tools to extract AST graph
-    return {
-      nodes: [],
-      edges: [],
-    };
-  }
-}
-
-/**
  * High-level Analyzer wrapper that accepts any GraphProvider implementation
  */
 export class CodebaseAnalyzer implements Analyzer {
   private provider: GraphProvider;
 
-  constructor(provider: GraphProvider = new MockGraphProvider()) {
+  constructor(provider: GraphProvider = new CodebaseMemoryProvider()) {
     this.provider = provider;
+  }
+
+  async indexRepository(repoPath: string): Promise<void> {
+    if (this.provider.indexRepository) {
+      await this.provider.indexRepository(repoPath);
+    }
   }
 
   async getKnowledgeGraph(repoPath: string): Promise<KnowledgeGraph> {
