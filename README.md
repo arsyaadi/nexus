@@ -46,7 +46,7 @@ Nexus supports **two flexible generation modes**:
 
 ### 1. Build Nexus Server
 ```bash
-git clone https://github.com/arsyaadi/okf.git nexus
+git clone https://github.com/arsyaadi/nexus.git
 cd nexus
 npm install
 npm run build
