@@ -57,6 +57,13 @@ export interface ExecutionPlan {
 }
 
 /**
+ * User Review Handler Interface
+ */
+export interface UserReviewHandler {
+  reviewPlan(plan: ExecutionPlan): Promise<boolean>;
+}
+
+/**
  * Generated documentation bundle for one module
  */
 export interface ModuleDocOutput {

@@ -2,6 +2,9 @@
 
 import { CodebaseAnalyzer } from './analyzer/index.js';
 import { ModulePlanner } from './planner/index.js';
+import { ModuleExecutor } from './executor/index.js';
+import { OKFStorage } from './storage/index.js';
+import { OKFWorkflowOrchestrator, PlaceholderUserReview } from './workflow/index.js';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -14,13 +17,14 @@ async function main() {
 Usage: okf <command> [options]
 
 Commands:
-  plan <path>       Generate Execution Plan from repository Knowledge Graph
+  run <path>        Execute full Phase 1 Workflow (Graph → Plan → Review → Execute → .okf)
+  plan <path>       Generate Execution Plan only
   help              Show help information
 `);
     return;
   }
 
-  if (command === 'plan' || command === 'analyze') {
+  if (command === 'plan') {
     const targetPath = args[1] || '.';
     console.log(`\n--- Analyzing Knowledge Graph at: ${targetPath} ---`);
 
@@ -39,6 +43,21 @@ Commands:
       console.log('');
     }
 
+    return;
+  }
+
+  if (command === 'run' || command === 'analyze') {
+    const targetPath = args[1] || '.';
+
+    const orchestrator = new OKFWorkflowOrchestrator({
+      graphProvider: new CodebaseAnalyzer(),
+      planner: new ModulePlanner(),
+      reviewer: new PlaceholderUserReview(),
+      executor: new ModuleExecutor(),
+      storage: new OKFStorage(),
+    });
+
+    await orchestrator.run(targetPath);
     return;
   }
 
