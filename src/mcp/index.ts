@@ -92,7 +92,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             business_content: {
               type: 'string',
-              description: 'Inferred business flow in Markdown format (marked DRAFT)',
+              description: 'Inferred business flow in Markdown format (marked DRAFT). MUST include a Mermaid diagram block (```mermaid flowchart TD ... ```).',
             },
           },
           required: ['repo_path', 'module_name', 'technical_content', 'business_content'],
@@ -234,11 +234,31 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const technicalContent = String(args?.technical_content || '');
       const businessContent = String(args?.business_content || '');
 
+      let finalBusinessContent = businessContent;
+      if (!finalBusinessContent.includes('```mermaid')) {
+        const diagramBlock = [
+          ``,
+          `# Alur Bisnis`,
+          ``,
+          `\`\`\`mermaid`,
+          `flowchart TD`,
+          `    A[Mulai Transaksi ${moduleName}] --> B[Input Data & Parameter]`,
+          `    B --> C[Validasi Rule Bisnis ${moduleName}]`,
+          `    C --> D{Apakah Valid?}`,
+          `    D -->|Ya| E[Eksekusi Operasi ${moduleName}]`,
+          `    D -->|Tidak| F[Kembalikan Error & Log]`,
+          `    E --> G[Update Storage & Finish]`,
+          `\`\`\``,
+          ``,
+        ].join('\n');
+        finalBusinessContent += `\n${diagramBlock}`;
+      }
+
       await writer.initializePackage(repoPath);
       await writer.writeModuleDoc(repoPath, {
         moduleName,
         technicalContent,
-        businessContent,
+        businessContent: finalBusinessContent,
       });
 
       return {
