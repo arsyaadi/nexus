@@ -18,7 +18,7 @@ import { loadNexusPackage } from './loader.js';
 
 export class DocxExporter implements NexusExporter {
   async export(options: NexusExporterOptions): Promise<void> {
-    const targetDir = options.nexusDir || options.vidyaDir || options.okfDir || '.';
+    const targetDir = options.nexusDir || '.';
     const { outputDir, title = 'Nexus End-to-End Documentation' } = options;
     const pkg = await loadNexusPackage(targetDir);
 

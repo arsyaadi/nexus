@@ -82,6 +82,3 @@ export interface NexusMetadata {
   repoPath: string;
   modules: string[];
 }
-
-export type VidyaMetadata = NexusMetadata;
-export type OKFMetadata = NexusMetadata;

@@ -4,7 +4,7 @@ import ts from 'typescript';
 import { GraphEdge, GraphNode, GraphProvider, KnowledgeGraph } from '../types/index.js';
 
 export class LocalGraphProvider implements GraphProvider {
-  private ignoredDirs = new Set(['.git', 'node_modules', 'dist', '.okf', '.agents', 'build', 'coverage']);
+  private ignoredDirs = new Set(['.git', 'node_modules', 'dist', '.nexus', '.agents', 'build', 'coverage']);
 
   async indexRepository(_repoPath: string): Promise<void> {
     // No-op for built-in analyzer: AST indexing happens dynamically on-demand

@@ -6,9 +6,7 @@
   "type": "module",
   "bin": {
     "nexus": "./dist/index.js",
-    "nexus-mcp": "./dist/mcp/index.js",
-    "vidya": "./dist/index.js",
-    "okf": "./dist/index.js"
+    "nexus-mcp": "./dist/mcp/index.js"
   },
   "scripts": {
     "build": "tsc",

@@ -40,7 +40,7 @@ Commands:
     const titleArgIdx = args.indexOf('--title');
     const title = titleArgIdx !== -1 ? args[titleArgIdx + 1] : 'Nexus End-to-End Documentation';
 
-    const nexusDir = targetPath.endsWith('.nexus') || targetPath.endsWith('.vidya') || targetPath.endsWith('.okf') 
+    const nexusDir = targetPath.endsWith('.nexus') 
       ? targetPath 
       : path.join(targetPath, '.nexus');
 

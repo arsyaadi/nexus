@@ -4,23 +4,15 @@ import { NexusPackageData } from './index.js';
 import { NexusMetadata } from '../types/index.js';
 
 export async function loadNexusPackage(targetDir: string): Promise<NexusPackageData> {
-  // Check for .nexus dir first, fallback to .vidya / .okf dir
   let pkgDir = targetDir;
-  if (!pkgDir.endsWith('.nexus') && !pkgDir.endsWith('.vidya') && !pkgDir.endsWith('.okf')) {
+  if (!pkgDir.endsWith('.nexus')) {
     try {
       const nexusStat = await fs.stat(path.join(targetDir, '.nexus'));
       if (nexusStat.isDirectory()) {
         pkgDir = path.join(targetDir, '.nexus');
       }
     } catch {
-      try {
-        const vidyaStat = await fs.stat(path.join(targetDir, '.vidya'));
-        if (vidyaStat.isDirectory()) {
-          pkgDir = path.join(targetDir, '.vidya');
-        }
-      } catch {
-        pkgDir = path.join(targetDir, '.okf');
-      }
+      // Use targetDir as fallback
     }
   }
 
@@ -82,6 +74,3 @@ export async function loadNexusPackage(targetDir: string): Promise<NexusPackageD
     businessDocs
   };
 }
-
-export const loadVidyaPackage = loadNexusPackage;
-export const loadOKFPackage = loadNexusPackage;

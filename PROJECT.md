@@ -1,93 +1,12 @@
-# OKF Vision
+# Nexus Vision
 
-## Problem
-
-Software projects rarely have complete documentation.
-
-Business knowledge lives inside source code.
-
-Developers understand the system.
-
-New developers do not.
-
-Documentation becomes outdated.
+Nexus is a standalone, AI-first knowledge extraction engine designed to turn raw source code into structured, reviewable knowledge packages (`.nexus`) and publishable documentation (Word `.docx` & Docusaurus).
 
 ---
 
-## Solution
+## Core Capabilities
 
-Transform source code into structured knowledge.
-
-Produce draft documentation that humans can review.
-
-The generated knowledge should be versionable, reviewable, and regeneratable.
-
----
-
-## Guiding Principle
-
-Code is the source of truth.
-
-Documentation is generated from code.
-
-Business knowledge is inferred from implementation.
-
----
-
-## Success Criteria
-
-A developer unfamiliar with the project should understand:
-
-- what each module does
-- how modules communicate
-- where business rules exist
-- where to modify features
-
-without reading hundreds of source files.
-
----
-
-## Workflow
-
-Input
-
-Repository
-
-↓
-
-Knowledge Graph
-
-↓
-
-Planning
-
-↓
-
-Review
-
-↓
-
-Execution
-
-↓
-
-.okf
-
-Nothing more.
-
----
-
-## Out of Scope
-
-- Documentation Renderer
-- Docusaurus
-- Mermaid
-- UML
-- PDF
-- AI Chat
-- Incremental Update
-- Knowledge Diff
-
-These are intentionally postponed.
-
-Focus on building a solid knowledge extraction engine first.
+1. **Standalone AST Engine**: Parses codebases natively using the TypeScript Compiler API.
+2. **Master E2E System Flow**: Generates single-step Master Mermaid E2E Flowcharts.
+3. **Capability Module Deep-Dives**: Generates technical contracts (sequence diagrams) and draft business flows (flowcharts).
+4. **Native Exporters**: Exports `.nexus` packages into `.docx` and Docusaurus sites without external CLI tools like `pandoc` or `python`.

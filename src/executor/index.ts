@@ -63,7 +63,7 @@ export class ModuleWorker implements TaskWorker {
       `*Implementation details extracted from Knowledge Graph analysis.*`,
       ``,
       `- **Module Scope**: ${moduleName}`,
-      `- **Data Mutability**: State updates written via OKF Storage adapter.`,
+      `- **Data Mutability**: State updates written via Nexus Storage adapter.`,
       `- **Dependencies**: Interacts with related graph components.`,
     ].join('\n');
 

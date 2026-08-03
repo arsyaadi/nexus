@@ -6,9 +6,8 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
 
-import { CodebaseAnalyzer, LocalGraphProvider } from '../analyzer/index.js';
+import { CodebaseAnalyzer } from '../analyzer/index.js';
 import { ModulePlanner, E2EFlowGenerator } from '../planner/index.js';
-import { FileSystemVidyaWriter } from '../storage/index.js';
 import { FileSystemNexusWriter } from '../storage/index.js';
 import { NexusMetadata } from '../types/index.js';
 import { DocusaurusExporter } from '../exporter/docusaurusExporter.js';
@@ -171,7 +170,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
   try {
-    if (name === 'nexus_generate_e2e' || name === 'vidya_generate_e2e' || name === 'okf_generate_e2e') {
+    if (name === 'nexus_generate_e2e') {
       const repoPath = String(args?.repo_path || '.');
       const analyzer = new CodebaseAnalyzer();
 
@@ -199,7 +198,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               {
                 status: 'success',
                 message: 'Master End-to-End Mermaid Flowchart & single unified documentation generated in ONE step.',
-                e2eFile: path.join(repoPath, '.okf', 'e2e_flow.md'),
+                e2eFile: path.join(repoPath, '.nexus', 'e2e_flow.md'),
                 masterMermaidDiagram: e2eFlow.masterMermaid,
                 preview: e2eFlow.markdownContent.slice(0, 1200) + '\n...[truncated preview]',
               },
@@ -211,7 +210,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
-    if (name === 'nexus_plan' || name === 'vidya_plan' || name === 'okf_plan') {
+    if (name === 'nexus_plan') {
       const repoPath = String(args?.repo_path || '.');
       const analyzer = new CodebaseAnalyzer();
 
@@ -248,7 +247,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
-    if (name === 'nexus_get_module_context' || name === 'vidya_get_module_context' || name === 'okf_get_module_context') {
+    if (name === 'nexus_get_module_context') {
       const repoPath = String(args?.repo_path || '.');
       const moduleName = String(args?.module_name || '');
       const relatedFiles = (args?.related_files as string[]) || [];
@@ -284,7 +283,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
-    if (name === 'nexus_save_module_doc' || name === 'vidya_save_module_doc' || name === 'okf_save_module_doc') {
+    if (name === 'nexus_save_module_doc') {
       const repoPath = String(args?.repo_path || '.');
       const moduleName = String(args?.module_name || '');
       const technicalContent = String(args?.technical_content || '');
@@ -334,7 +333,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
-    if (name === 'nexus_finalize' || name === 'vidya_finalize' || name === 'okf_finalize') {
+    if (name === 'nexus_finalize') {
       const repoPath = String(args?.repo_path || '.');
       const modules = (args?.modules as string[]) || [];
 
@@ -363,13 +362,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
-    if (name === 'nexus_export' || name === 'vidya_export' || name === 'okf_export') {
+    if (name === 'nexus_export') {
       const targetDir = String(args?.target_dir || '.');
       const format = String(args?.format || 'docx').toLowerCase();
       const outputDir = String(args?.output_dir || './export');
       const title = args?.title ? String(args.title) : 'Nexus End-to-End Documentation';
 
-      const nexusDir = targetDir.endsWith('.nexus') || targetDir.endsWith('.vidya') || targetDir.endsWith('.okf') 
+      const nexusDir = targetDir.endsWith('.nexus') 
         ? targetDir 
         : path.join(targetDir, '.nexus');
 
@@ -406,7 +405,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       content: [
         {
           type: 'text',
-          text: `OKF MCP Error: ${errorMsg}`,
+          text: `Nexus MCP Error: ${errorMsg}`,
         },
       ],
     };
@@ -416,10 +415,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function runServer() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('OKF MCP Server running on stdio.');
+  console.error('Nexus MCP Server running on stdio.');
 }
 
 runServer().catch((err) => {
-  console.error('Fatal OKF MCP Server Error:', err);
+  console.error('Fatal Nexus MCP Server Error:', err);
   process.exit(1);
 });

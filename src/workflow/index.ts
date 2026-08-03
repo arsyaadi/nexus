@@ -99,6 +99,3 @@ export class NexusWorkflowOrchestrator {
     return metadata;
   }
 }
-
-export type VidyaWorkflowOrchestrator = NexusWorkflowOrchestrator;
-export type OKFWorkflowOrchestrator = NexusWorkflowOrchestrator;
