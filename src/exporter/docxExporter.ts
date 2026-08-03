@@ -4,6 +4,7 @@ import {
   BorderStyle,
   Document,
   HeadingLevel,
+  ImageRun,
   Packer,
   Paragraph,
   Table,
@@ -23,7 +24,7 @@ export class DocxExporter implements OKFExporter {
     await fs.mkdir(outputDir, { recursive: true });
 
     // 1. Generate technical.docx
-    const techDoc = this.createDocumentFromMap(
+    const techDoc = await this.createDocumentFromMap(
       `${title} - Technical Documentation`,
       pkg.technicalDocs
     );
@@ -31,7 +32,7 @@ export class DocxExporter implements OKFExporter {
     await fs.writeFile(path.join(outputDir, 'technical.docx'), techBuffer);
 
     // 2. Generate business.docx
-    const bizDoc = this.createDocumentFromMap(
+    const bizDoc = await this.createDocumentFromMap(
       `${title} - Business Flow Documentation (Draft)`,
       pkg.businessDocs
     );
@@ -39,7 +40,7 @@ export class DocxExporter implements OKFExporter {
     await fs.writeFile(path.join(outputDir, 'business.docx'), bizBuffer);
   }
 
-  private createDocumentFromMap(docTitle: string, docsMap: Map<string, string>): Document {
+  private async createDocumentFromMap(docTitle: string, docsMap: Map<string, string>): Promise<Document> {
     const children: (Paragraph | Table)[] = [];
 
     // Main Document Header Title
@@ -70,7 +71,7 @@ export class DocxExporter implements OKFExporter {
         })
       );
 
-      const elements = this.parseMarkdownToDocxElements(markdown);
+      const elements = await this.parseMarkdownToDocxElements(markdown);
       children.push(...elements);
     }
 
@@ -84,7 +85,7 @@ export class DocxExporter implements OKFExporter {
     });
   }
 
-  private parseMarkdownToDocxElements(markdown: string): (Paragraph | Table)[] {
+  private async parseMarkdownToDocxElements(markdown: string): Promise<(Paragraph | Table)[]> {
     const elements: (Paragraph | Table)[] = [];
     const lines = markdown.split(/\r?\n/);
 
@@ -116,7 +117,29 @@ export class DocxExporter implements OKFExporter {
         i++; // skip closing ```
 
         if (isMermaid) {
-          elements.push(this.renderMermaidAsTable(codeLines));
+          const mermaidCode = codeLines.join('\n');
+          const imgBuffer = await this.fetchMermaidImage(mermaidCode);
+
+          if (imgBuffer) {
+            elements.push(
+              new Paragraph({
+                children: [
+                  new ImageRun({
+                    data: imgBuffer,
+                    transformation: {
+                      width: 550,
+                      height: 320
+                    },
+                    type: 'png'
+                  })
+                ],
+                spacing: { before: 180, after: 180 }
+              })
+            );
+          } else {
+            // Fallback to styled process table if offline/fetch error
+            elements.push(this.renderMermaidAsTable(codeLines));
+          }
         } else {
           elements.push(
             new Paragraph({
@@ -218,12 +241,29 @@ export class DocxExporter implements OKFExporter {
   }
 
   /**
+   * Fetch rendered PNG image buffer for Mermaid code via mermaid.ink service
+   */
+  private async fetchMermaidImage(mermaidCode: string): Promise<Buffer | null> {
+    try {
+      const base64Code = Buffer.from(mermaidCode, 'utf-8').toString('base64');
+      const url = `https://mermaid.ink/img/${base64Code}`;
+      const response = await fetch(url);
+      if (response.ok) {
+        const arrayBuf = await response.arrayBuffer();
+        return Buffer.from(arrayBuf);
+      }
+    } catch {
+      // Fallback on offline or fetch error
+    }
+    return null;
+  }
+
+  /**
    * Parse inline Markdown syntax (**bold**, *italic*, `code`) into TextRun objects
    */
   private parseInlineMarkdown(text: string): TextRun[] {
     const runs: TextRun[] = [];
 
-    // Regex to match **bold**, *italic*, and `code`
     const regex = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g;
     const parts = text.split(regex);
 
@@ -268,7 +308,7 @@ export class DocxExporter implements OKFExporter {
 
     const parsedLines = tableLines
       .map((l) => l.trim())
-      .filter((l) => l && !l.match(/^\|?\s*:?-+:?\s*(\|?\s*:?-+:?\s*)*\|?$/)); // Filter out separator lines |---|---|
+      .filter((l) => l && !l.match(/^\|?\s*:?-+:?\s*(\|?\s*:?-+:?\s*)*\|?$/));
 
     parsedLines.forEach((line, rowIndex) => {
       const cells = line
@@ -300,7 +340,7 @@ export class DocxExporter implements OKFExporter {
   }
 
   /**
-   * Convert Mermaid diagram lines to styled Process Flow Table in Word
+   * Convert Mermaid diagram lines to styled Process Flow Table in Word (Fallback)
    */
   private renderMermaidAsTable(mermaidLines: string[]): Table {
     const steps: Array<{ from: string; to: string; action: string }> = [];
@@ -328,7 +368,6 @@ export class DocxExporter implements OKFExporter {
     ];
 
     if (steps.length === 0) {
-      // Fallback: render raw mermaid code cleanly if non-standard flowchart
       rows.push(
         new TableRow({
           children: [
