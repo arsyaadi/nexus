@@ -6,7 +6,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
 
-import { CodebaseAnalyzer, CodebaseMemoryProvider, LocalGraphProvider } from '../analyzer/index.js';
+import { CodebaseAnalyzer, LocalGraphProvider } from '../analyzer/index.js';
 import { ModulePlanner } from '../planner/index.js';
 import { FileSystemOKFWriter } from '../storage/index.js';
 import { OKFMetadata } from '../types/index.js';

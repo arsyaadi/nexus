@@ -1,15 +1,14 @@
 import { KnowledgeGraph, GraphProvider } from '../types/index.js';
 import { LocalGraphProvider } from './localGraphProvider.js';
-import { CodebaseMemoryProvider } from './codebaseMemoryProvider.js';
 
-export { LocalGraphProvider, CodebaseMemoryProvider };
+export { LocalGraphProvider };
 
 export interface Analyzer extends GraphProvider {
   analyze(repoPath: string): Promise<KnowledgeGraph>;
 }
 
 /**
- * High-level Analyzer wrapper that defaults to built-in LocalGraphProvider (zero external dependency).
+ * High-level Codebase Analyzer powered by built-in AST parser (zero external dependency).
  */
 export class CodebaseAnalyzer implements Analyzer {
   private provider: GraphProvider;
@@ -25,17 +24,7 @@ export class CodebaseAnalyzer implements Analyzer {
   }
 
   async getKnowledgeGraph(repoPath: string): Promise<KnowledgeGraph> {
-    try {
-      return await this.provider.getKnowledgeGraph(repoPath);
-    } catch (err) {
-      // Fallback to LocalGraphProvider if external provider fails
-      if (!(this.provider instanceof LocalGraphProvider)) {
-        console.warn('[CodebaseAnalyzer] External provider failed, falling back to built-in LocalGraphProvider:', err);
-        const fallback = new LocalGraphProvider();
-        return fallback.getKnowledgeGraph(repoPath);
-      }
-      throw err;
-    }
+    return this.provider.getKnowledgeGraph(repoPath);
   }
 
   async analyze(repoPath: string): Promise<KnowledgeGraph> {

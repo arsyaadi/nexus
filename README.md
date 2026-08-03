@@ -21,8 +21,7 @@ OKF operates as a **Model Context Protocol (MCP) Server** designed to work seaml
 
 ## 🛠️ Prerequisites & Requirements
 
-1. **Node.js**: `v18.x` or higher.
-2. *(Optional)* **Codebase Memory MCP**: OKF can optionally integrate with [`codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp) if available, but uses built-in `LocalGraphProvider` by default.
+1. **Node.js**: `v18.x` or higher. (Zero external service dependencies required).
 
 ---
 

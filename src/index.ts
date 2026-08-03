@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import * as path from 'node:path';
-import { CodebaseAnalyzer, CodebaseMemoryProvider } from './analyzer/index.js';
+import { CodebaseAnalyzer } from './analyzer/index.js';
 import { ModulePlanner } from './planner/index.js';
 import { ModuleExecutor } from './executor/index.js';
 import { OKFStorage } from './storage/index.js';
@@ -60,8 +60,7 @@ Commands:
     return;
   }
 
-  const provider = new CodebaseMemoryProvider();
-  const analyzer = new CodebaseAnalyzer(provider);
+  const analyzer = new CodebaseAnalyzer();
 
   if (command === 'init') {
     console.log(`\n--- Initializing & Indexing Repository at: ${targetPath} ---`);
