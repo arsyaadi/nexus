@@ -21,7 +21,7 @@ OKF operates as a **Model Context Protocol (MCP) Server** designed to work seaml
 
 ## 🛠️ Prerequisites & Requirements
 
-1. **Node.js**: `v18.x` or higher. (Zero external service dependencies required).
+1. **Node.js**: `v18.x` or higher.
 
 ---
 
