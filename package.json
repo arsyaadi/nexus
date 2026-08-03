@@ -5,12 +5,14 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "okf": "./dist/index.js"
+    "okf": "./dist/index.js",
+    "okf-mcp": "./dist/mcp/index.js"
   },
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "mcp": "node dist/mcp/index.js"
   },
   "license": "MIT",
   "devDependencies": {
