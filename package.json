@@ -1,7 +1,7 @@
 {
   "name": "nexus",
   "version": "0.1.0",
-  "description": "Nexus - Standalone AI Knowledge Graph & Master End-to-End Flow Extraction Engine",
+  "description": "Nexus - Standalone AST Knowledge Graph & Master End-to-End Flow Extraction Engine",
   "main": "dist/index.js",
   "type": "module",
   "bin": {

@@ -1,10 +1,10 @@
 # Nexus
 
-> Standalone AI Knowledge Graph & Master End-to-End Flow Extraction Engine. Turn source code into structured knowledge packages (`.nexus`) and publishable documentation (Word `.docx` & Docusaurus).
+> Standalone AST Knowledge Graph & Master End-to-End Flow Extraction Engine. Turn source code into structured knowledge packages (`.nexus`) and publishable documentation (Word `.docx` & Docusaurus).
 
-**Nexus** (*The Central Connection Hub*) is a **100% standalone**, AI-first knowledge extraction engine. Instead of generating raw, unorganized markdown files, Nexus analyzes codebases using a built-in AST knowledge graph analyzer (`LocalGraphProvider`), constructs **Master End-to-End System Flowcharts**, groups functionality into capability-based modules, and generates versionable `.nexus` packages complete with **Mermaid Process Diagrams** and **Business Specifications**.
+**Nexus** (*The Central Connection Hub*) is a **100% standalone** knowledge extraction engine. Instead of generating raw, unorganized markdown files, Nexus analyzes codebases using a built-in AST knowledge graph analyzer (`LocalGraphProvider`), constructs **Master End-to-End System Flowcharts**, groups functionality into capability-based modules, and generates versionable `.nexus` packages complete with **Mermaid Process Diagrams** and **Business Specifications**.
 
-Nexus operates as a **Model Context Protocol (MCP) Server** designed to work seamlessly alongside AI coding agents such as **Claude Code**, **Antigravity**, **Cursor**, and **Windsurf**.
+Nexus operates as a **Model Context Protocol (MCP) Server** designed to integrate seamlessly with modern developer workflows and coding agents (**Claude Code**, **Antigravity**, **Cursor**, **Windsurf**).
 
 ---
 
