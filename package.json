@@ -8,6 +8,9 @@
     "nexus": "./dist/index.js",
     "nexus-mcp": "./dist/mcp/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
