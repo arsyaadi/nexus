@@ -18,64 +18,35 @@ import { loadOKFPackage } from './loader.js';
 
 export class DocxExporter implements OKFExporter {
   async export(options: OKFExporterOptions): Promise<void> {
-    const { okfDir, outputDir, title = 'OKF Documentation' } = options;
+    const { okfDir, outputDir, title = 'OKF End-to-End Documentation' } = options;
     const pkg = await loadOKFPackage(okfDir);
 
     await fs.mkdir(outputDir, { recursive: true });
 
-    // 1. Generate technical.docx
-    const techDoc = await this.createDocumentFromMap(
-      `${title} - Technical Documentation`,
-      pkg.technicalDocs
-    );
-    const techBuffer = await Packer.toBuffer(techDoc);
-    await fs.writeFile(path.join(outputDir, 'technical.docx'), techBuffer);
-
-    // 2. Generate business.docx
-    const bizDoc = await this.createDocumentFromMap(
-      `${title} - Business Flow Documentation (Draft)`,
-      pkg.businessDocs
-    );
-    const bizBuffer = await Packer.toBuffer(bizDoc);
-    await fs.writeFile(path.join(outputDir, 'business.docx'), bizBuffer);
-  }
-
-  private async createDocumentFromMap(docTitle: string, docsMap: Map<string, string>): Promise<Document> {
+    // Generate SINGLE unified Word document: documentation.docx
     const children: (Paragraph | Table)[] = [];
 
-    // Main Document Header Title
+    // Title Header
     children.push(
       new Paragraph({
-        text: docTitle,
+        text: title,
         heading: HeadingLevel.TITLE,
         spacing: { after: 300 }
       })
     );
 
-    if (docsMap.size === 0) {
-      children.push(
-        new Paragraph({
-          children: [new TextRun({ text: 'No modules documented.', italics: true })]
-        })
-      );
+    // Section 1: Master E2E Flow (if present)
+    if (pkg.e2eFlowContent) {
+      const e2eElements = await this.parseMarkdownToDocxElements(pkg.e2eFlowContent);
+      children.push(...e2eElements);
+    } else {
+      // Fallback: merge technical & business docs
+      const techElements = await this.createElementsFromMap('Technical Specifications', pkg.technicalDocs);
+      const bizElements = await this.createElementsFromMap('Business Flows', pkg.businessDocs);
+      children.push(...techElements, ...bizElements);
     }
 
-    for (const [filename, markdown] of docsMap.entries()) {
-      const moduleName = filename.replace(/\.md$/, '').toUpperCase();
-
-      children.push(
-        new Paragraph({
-          text: `Module: ${moduleName}`,
-          heading: HeadingLevel.HEADING_1,
-          spacing: { before: 400, after: 200 }
-        })
-      );
-
-      const elements = await this.parseMarkdownToDocxElements(markdown);
-      children.push(...elements);
-    }
-
-    return new Document({
+    const doc = new Document({
       sections: [
         {
           properties: {},
@@ -83,6 +54,35 @@ export class DocxExporter implements OKFExporter {
         }
       ]
     });
+
+    const docBuffer = await Packer.toBuffer(doc);
+    await fs.writeFile(path.join(outputDir, 'documentation.docx'), docBuffer);
+  }
+
+  private async createElementsFromMap(sectionTitle: string, docsMap: Map<string, string>): Promise<(Paragraph | Table)[]> {
+    const elements: (Paragraph | Table)[] = [];
+    elements.push(
+      new Paragraph({
+        text: sectionTitle,
+        heading: HeadingLevel.HEADING_1,
+        spacing: { before: 400, after: 200 }
+      })
+    );
+
+    for (const [filename, markdown] of docsMap.entries()) {
+      const moduleName = filename.replace(/\.md$/, '').toUpperCase();
+      elements.push(
+        new Paragraph({
+          text: `Module: ${moduleName}`,
+          heading: HeadingLevel.HEADING_2,
+          spacing: { before: 300, after: 150 }
+        })
+      );
+      const parsed = await this.parseMarkdownToDocxElements(markdown);
+      elements.push(...parsed);
+    }
+
+    return elements;
   }
 
   private async parseMarkdownToDocxElements(markdown: string): Promise<(Paragraph | Table)[]> {

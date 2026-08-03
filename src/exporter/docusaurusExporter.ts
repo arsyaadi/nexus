@@ -5,31 +5,40 @@ import { loadOKFPackage } from './loader.js';
 
 export class DocusaurusExporter implements OKFExporter {
   async export(options: OKFExporterOptions): Promise<void> {
-    const { okfDir, outputDir, title = 'OKF Documentation' } = options;
+    const { okfDir, outputDir, title = 'OKF End-to-End Documentation' } = options;
     const pkg = await loadOKFPackage(okfDir);
 
-    const docsTechDir = path.join(outputDir, 'docs', 'technical');
-    const docsBizDir = path.join(outputDir, 'docs', 'business');
+    const docsDir = path.join(outputDir, 'docs');
+    const docsTechDir = path.join(docsDir, 'technical');
+    const docsBizDir = path.join(docsDir, 'business');
 
     await fs.mkdir(docsTechDir, { recursive: true });
     await fs.mkdir(docsBizDir, { recursive: true });
 
-    // Write technical docs
+    // 1. Write E2E Master Flow doc if available
+    if (pkg.e2eFlowContent) {
+      await fs.writeFile(path.join(docsDir, 'e2e-flow.md'), pkg.e2eFlowContent, 'utf-8');
+    }
+
+    // 2. Write technical docs
     for (const [filename, content] of pkg.technicalDocs.entries()) {
       await fs.writeFile(path.join(docsTechDir, filename), content, 'utf-8');
     }
 
-    // Write business docs
+    // 3. Write business docs
     for (const [filename, content] of pkg.businessDocs.entries()) {
       await fs.writeFile(path.join(docsBizDir, filename), content, 'utf-8');
     }
 
-    // Write sidebars.ts
-    const sidebarsContent = `import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
+    // 4. Write sidebars.ts
+    const sidebarItems: string[] = [];
 
-const sidebars: SidebarsConfig = {
-  tutorialSidebar: [
-    {
+    if (pkg.e2eFlowContent) {
+      sidebarItems.push(`    'e2e-flow'`);
+    }
+
+    if (pkg.technicalDocs.size > 0) {
+      sidebarItems.push(`    {
       type: 'category',
       label: 'Technical Documentation',
       items: [
@@ -37,8 +46,11 @@ ${Array.from(pkg.technicalDocs.keys())
   .map((f) => `        'technical/${f.replace(/\.md$/, '')}'`)
   .join(',\n')}
       ],
-    },
-    {
+    }`);
+    }
+
+    if (pkg.businessDocs.size > 0) {
+      sidebarItems.push(`    {
       type: 'category',
       label: 'Business Flow (Draft)',
       items: [
@@ -46,7 +58,14 @@ ${Array.from(pkg.businessDocs.keys())
   .map((f) => `        'business/${f.replace(/\.md$/, '')}'`)
   .join(',\n')}
       ],
-    },
+    }`);
+    }
+
+    const sidebarsContent = `import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
+
+const sidebars: SidebarsConfig = {
+  tutorialSidebar: [
+${sidebarItems.join(',\n')}
   ],
 };
 

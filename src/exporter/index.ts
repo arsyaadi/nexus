@@ -12,6 +12,7 @@ export interface OKFExporter {
 
 export interface OKFPackageData {
   metadata: OKFMetadata;
+  e2eFlowContent?: string;
   technicalDocs: Map<string, string>; // filename -> markdown content
   businessDocs: Map<string, string>;  // filename -> markdown content
 }

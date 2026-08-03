@@ -1,3 +1,4 @@
+import * as path from 'node:path';
 import {
   GraphProvider,
   ExecutionPlan,
@@ -5,7 +6,7 @@ import {
   OKFMetadata,
 } from '../types/index.js';
 import { TaskExecutor } from '../executor/index.js';
-import { Planner } from '../planner/index.js';
+import { Planner, E2EFlowGenerator } from '../planner/index.js';
 import { StorageManager } from '../storage/index.js';
 
 export class PlaceholderUserReview implements UserReviewHandler {
@@ -48,23 +49,32 @@ export class OKFWorkflowOrchestrator {
     const graph = await this.graphProvider.getKnowledgeGraph(repoPath);
     console.log(`Knowledge Graph loaded (${graph.nodes.length} nodes, ${graph.edges.length} edges).`);
 
-    // Stage 2: Planning
-    console.log(`[Workflow: Stage 2] Generating Execution Plan...`);
+    // Stage 2: Generate Master E2E System Flow
+    console.log(`[Workflow: Stage 2] Generating Master End-to-End System Flow...`);
+    const e2eGenerator = new E2EFlowGenerator();
+    const repoName = path.basename(path.resolve(repoPath)) || 'System';
+    const e2eFlow = e2eGenerator.generate(graph, repoName);
+
+    // Stage 3: Planning
+    console.log(`[Workflow: Stage 3] Generating Execution Plan...`);
     const plan = await this.planner.createPlan(graph, repoPath);
     console.log(`Plan generated (${plan.tasks.length} capability modules).`);
 
-    // Stage 3: User Review
-    console.log(`[Workflow: Stage 3] Requesting User Review...`);
+    // Stage 4: User Review
+    console.log(`[Workflow: Stage 4] Requesting User Review...`);
     const isApproved = await this.reviewer.reviewPlan(plan);
     if (!isApproved) {
       throw new Error('Workflow aborted: Execution Plan was rejected during User Review.');
     }
 
-    // Stage 4: Task Execution & .okf Generation (Only after approval!)
-    console.log(`[Workflow: Stage 4] User approved. Initializing .okf directory...`);
+    // Stage 5: Task Execution & Single E2E + Package Generation
+    console.log(`[Workflow: Stage 5] Initializing .okf package directory...`);
     await this.storage.initOKFDir(repoPath);
 
-    console.log(`[Workflow: Stage 5] Executing tasks module-by-module...`);
+    console.log(`[Workflow: Stage 5.1] Writing Single Unified E2E Document (.okf/e2e_flow.md)...`);
+    await this.storage.writeE2EFlow(repoPath, e2eFlow.markdownContent);
+
+    console.log(`[Workflow: Stage 5.2] Executing tasks module-by-module...`);
     const processedModules: string[] = [];
 
     for (const task of plan.tasks) {
@@ -74,7 +84,7 @@ export class OKFWorkflowOrchestrator {
       processedModules.push(task.moduleName);
     }
 
-    // Stage 5: Finalize Package (.okf metadata generation)
+    // Stage 6: Finalize Package (.okf metadata generation)
     console.log(`[Workflow: Stage 6] Finalizing .okf package & metadata.json...`);
     const metadata: OKFMetadata = {
       version: '0.1.0',

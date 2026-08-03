@@ -1,4 +1,7 @@
 import { KnowledgeGraph, ExecutionPlan, ModuleTask, GraphNode, GraphEdge, GraphProvider } from '../types/index.js';
+import { E2EFlowGenerator, E2EFlowOutput } from './e2eFlowGenerator.js';
+
+export { E2EFlowGenerator, E2EFlowOutput };
 
 export interface Planner {
   createPlanFromProvider(provider: GraphProvider, repoPath: string): Promise<ExecutionPlan>;

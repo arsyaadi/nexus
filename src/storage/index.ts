@@ -2,9 +2,6 @@ import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { ModuleDocOutput, OKFMetadata } from '../types/index.js';
 
-/**
- * Output Renderer / Formatter abstraction for extensibility in future phases (e.g. Markdown, HTML, Docusaurus)
- */
 export interface RenderAdapter {
   formatTechnicalPath(moduleName: string): string;
   formatBusinessPath(moduleName: string): string;
@@ -24,13 +21,10 @@ export class DefaultMarkdownRenderAdapter implements RenderAdapter {
   }
 }
 
-/**
- * Writer contract for saving extracted knowledge into .okf package structure.
- * Has zero dependency on Planner or Workflow.
- */
 export interface OKFWriter {
   initializePackage(targetDir: string): Promise<void>;
   writeModuleDoc(targetDir: string, doc: ModuleDocOutput): Promise<void>;
+  writeE2EFlow(targetDir: string, content: string): Promise<void>;
   writeMetadata(targetDir: string, metadata: OKFMetadata): Promise<void>;
 }
 
@@ -59,18 +53,23 @@ export class FileSystemOKFWriter implements OKFWriter {
     await fs.writeFile(bizFile, doc.businessContent, 'utf-8');
   }
 
+  async writeE2EFlow(targetDir: string, content: string): Promise<void> {
+    const okfRoot = path.join(targetDir, '.okf');
+    await fs.mkdir(okfRoot, { recursive: true });
+    const e2eFile = path.join(okfRoot, 'e2e_flow.md');
+    await fs.writeFile(e2eFile, content, 'utf-8');
+  }
+
   async writeMetadata(targetDir: string, metadata: OKFMetadata): Promise<void> {
     const metaFile = path.join(targetDir, '.okf', 'metadata.json');
     await fs.writeFile(metaFile, JSON.stringify(metadata, null, 2), 'utf-8');
   }
 }
 
-/**
- * Backward-compatible StorageManager adapter for Workflow
- */
 export interface StorageManager {
   initOKFDir(targetDir: string): Promise<void>;
   saveModuleDoc(targetDir: string, doc: ModuleDocOutput): Promise<void>;
+  writeE2EFlow(targetDir: string, content: string): Promise<void>;
   writeMetadata(targetDir: string, metadata: OKFMetadata): Promise<void>;
 }
 
@@ -87,6 +86,10 @@ export class OKFStorage implements StorageManager {
 
   async saveModuleDoc(targetDir: string, doc: ModuleDocOutput): Promise<void> {
     await this.writer.writeModuleDoc(targetDir, doc);
+  }
+
+  async writeE2EFlow(targetDir: string, content: string): Promise<void> {
+    await this.writer.writeE2EFlow(targetDir, content);
   }
 
   async writeMetadata(targetDir: string, metadata: OKFMetadata): Promise<void> {

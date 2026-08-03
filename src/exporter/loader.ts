@@ -19,6 +19,14 @@ export async function loadOKFPackage(okfDir: string): Promise<OKFPackageData> {
     // Fallback default metadata if metadata.json is not present
   }
 
+  let e2eFlowContent: string | undefined;
+  try {
+    const e2ePath = path.join(okfDir, 'e2e_flow.md');
+    e2eFlowContent = await fs.readFile(e2ePath, 'utf-8');
+  } catch {
+    // Optional if not generated yet
+  }
+
   const technicalDocs = new Map<string, string>();
   const techDir = path.join(okfDir, 'technical');
   try {
@@ -49,6 +57,7 @@ export async function loadOKFPackage(okfDir: string): Promise<OKFPackageData> {
 
   return {
     metadata,
+    e2eFlowContent,
     technicalDocs,
     businessDocs
   };
