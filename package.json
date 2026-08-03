@@ -1,10 +1,11 @@
 {
-  "name": "vidya",
+  "name": "nexus",
   "version": "0.1.0",
-  "description": "Vidya - Standalone AI Knowledge Graph & Master End-to-End Flow Extraction Engine",
+  "description": "Nexus - Standalone AI Knowledge Graph & Master End-to-End Flow Extraction Engine",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
+    "nexus": "./dist/index.js",
     "vidya": "./dist/index.js",
     "okf": "./dist/index.js"
   },
@@ -15,6 +16,7 @@
     "test": "node dist/index.js run ."
   },
   "keywords": [
+    "nexus",
     "vidya",
     "knowledge-graph",
     "mcp",

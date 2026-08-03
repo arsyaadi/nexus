@@ -1,12 +1,12 @@
-# Vidya Development Agent
+# Nexus Development Agent
 
 ## Mission
 
-Build Vidya incrementally.
+Build Nexus incrementally.
 
 Prioritize correctness, simplicity, and maintainability over feature completeness.
 
-The current objective is generating a valid `.vidya` package and Master E2E Flow documentation.
+The current objective is generating a valid `.nexus` package and Master E2E Flow documentation.
 
 Nothing else.
 
@@ -34,13 +34,13 @@ Future phases should never complicate the current implementation.
 Implement only:
 
 - Repository analysis & AST Knowledge Graph
-- Single-step Master E2E Flow generation (`vidya_generate_e2e`)
-- Planning (`vidya_plan`)
+- Single-step Master E2E Flow generation (`nexus_generate_e2e`)
+- Planning (`nexus_plan`)
 - Task execution
 - Technical documentation (with Mermaid Sequence Diagrams)
 - Draft business flow (with Mermaid Flowcharts)
-- `.vidya` package generation
-- Exporting (`docx`, `docusaurus` via `vidya_export`)
+- `.nexus` package generation
+- Exporting (`docx`, `docusaurus` via `nexus_export`)
 
 Everything else belongs to future milestones.
 
@@ -56,27 +56,27 @@ Knowledge Graph
 
 ↓
 
-Master E2E Flow (`vidya_generate_e2e`) OR Planning (`vidya_plan`)
+Master E2E Flow (`nexus_generate_e2e`) OR Planning (`nexus_plan`)
 
 ↓
 
-Module Execution (`vidya_get_module_context` → `vidya_save_module_doc`)
+Module Execution (`nexus_get_module_context` → `nexus_save_module_doc`)
 
 ↓
 
-Finalize `.vidya` (`vidya_finalize`)
+Finalize `.nexus` (`nexus_finalize`)
 
 ↓
 
-Export (`vidya_export` → `docx` / `docusaurus`)
+Export (`nexus_export` → `docx` / `docusaurus`)
 
 ---
 
 # Export Execution Rule
 
-When the user asks to export or convert `.vidya` to `docx` or `docusaurus`:
+When the user asks to export or convert `.nexus` to `docx` or `docusaurus`:
 
-1. **ALWAYS** use the MCP tool `vidya_export` (via `ServerName: "vidya"`, `ToolName: "vidya_export"`), OR run CLI: `node dist/index.js export . --format docx --out <dir>`.
+1. **ALWAYS** use the MCP tool `nexus_export` (via `ServerName: "nexus"`, `ToolName: "nexus_export"`), OR run CLI: `node dist/index.js export . --format docx --out <dir>`.
 2. **NEVER** run external conversion tools such as `pandoc`, `python`, or `libreoffice`.
 
 ---

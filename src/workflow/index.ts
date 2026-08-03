@@ -3,7 +3,7 @@ import {
   GraphProvider,
   ExecutionPlan,
   UserReviewHandler,
-  VidyaMetadata,
+  NexusMetadata,
 } from '../types/index.js';
 import { TaskExecutor } from '../executor/index.js';
 import { Planner, E2EFlowGenerator } from '../planner/index.js';
@@ -26,7 +26,7 @@ export interface WorkflowOptions {
   storage: StorageManager;
 }
 
-export class VidyaWorkflowOrchestrator {
+export class NexusWorkflowOrchestrator {
   private graphProvider: GraphProvider;
   private planner: Planner;
   private reviewer: UserReviewHandler;
@@ -41,8 +41,8 @@ export class VidyaWorkflowOrchestrator {
     this.storage = options.storage;
   }
 
-  async run(repoPath: string): Promise<VidyaMetadata> {
-    console.log(`=== Starting Vidya Workflow for: ${repoPath} ===\n`);
+  async run(repoPath: string): Promise<NexusMetadata> {
+    console.log(`=== Starting Nexus Workflow for: ${repoPath} ===\n`);
 
     // Stage 1: Extract Knowledge Graph
     console.log(`[Workflow: Stage 1] Extracting Knowledge Graph...`);
@@ -68,10 +68,10 @@ export class VidyaWorkflowOrchestrator {
     }
 
     // Stage 5: Task Execution & Single E2E + Package Generation
-    console.log(`[Workflow: Stage 5] Initializing .vidya package directory...`);
-    await this.storage.initVidyaDir(repoPath);
+    console.log(`[Workflow: Stage 5] Initializing .nexus package directory...`);
+    await this.storage.initNexusDir(repoPath);
 
-    console.log(`[Workflow: Stage 5.1] Writing Single Unified E2E Document (.vidya/e2e_flow.md)...`);
+    console.log(`[Workflow: Stage 5.1] Writing Single Unified E2E Document (.nexus/e2e_flow.md)...`);
     await this.storage.writeE2EFlow(repoPath, e2eFlow.markdownContent);
 
     console.log(`[Workflow: Stage 5.2] Executing tasks module-by-module...`);
@@ -84,9 +84,9 @@ export class VidyaWorkflowOrchestrator {
       processedModules.push(task.moduleName);
     }
 
-    // Stage 6: Finalize Package (.vidya metadata generation)
-    console.log(`[Workflow: Stage 6] Finalizing .vidya package & metadata.json...`);
-    const metadata: VidyaMetadata = {
+    // Stage 6: Finalize Package (.nexus metadata generation)
+    console.log(`[Workflow: Stage 6] Finalizing .nexus package & metadata.json...`);
+    const metadata: NexusMetadata = {
       version: '0.1.0',
       generatedAt: new Date().toISOString(),
       repoPath,
@@ -94,10 +94,11 @@ export class VidyaWorkflowOrchestrator {
     };
 
     await this.storage.writeMetadata(repoPath, metadata);
-    console.log(`\n=== Vidya Workflow Completed Successfully! ===`);
+    console.log(`\n=== Nexus Workflow Completed Successfully! ===`);
 
     return metadata;
   }
 }
 
-export type OKFWorkflowOrchestrator = VidyaWorkflowOrchestrator;
+export type VidyaWorkflowOrchestrator = NexusWorkflowOrchestrator;
+export type OKFWorkflowOrchestrator = NexusWorkflowOrchestrator;

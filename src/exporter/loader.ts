@@ -1,23 +1,30 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import { VidyaPackageData } from './index.js';
-import { VidyaMetadata } from '../types/index.js';
+import { NexusPackageData } from './index.js';
+import { NexusMetadata } from '../types/index.js';
 
-export async function loadVidyaPackage(targetDir: string): Promise<VidyaPackageData> {
-  // Check for .vidya dir first, fallback to .okf dir
+export async function loadNexusPackage(targetDir: string): Promise<NexusPackageData> {
+  // Check for .nexus dir first, fallback to .vidya / .okf dir
   let pkgDir = targetDir;
-  if (!pkgDir.endsWith('.vidya') && !pkgDir.endsWith('.okf')) {
+  if (!pkgDir.endsWith('.nexus') && !pkgDir.endsWith('.vidya') && !pkgDir.endsWith('.okf')) {
     try {
-      const vidyaStat = await fs.stat(path.join(targetDir, '.vidya'));
-      if (vidyaStat.isDirectory()) {
-        pkgDir = path.join(targetDir, '.vidya');
+      const nexusStat = await fs.stat(path.join(targetDir, '.nexus'));
+      if (nexusStat.isDirectory()) {
+        pkgDir = path.join(targetDir, '.nexus');
       }
     } catch {
-      pkgDir = path.join(targetDir, '.okf');
+      try {
+        const vidyaStat = await fs.stat(path.join(targetDir, '.vidya'));
+        if (vidyaStat.isDirectory()) {
+          pkgDir = path.join(targetDir, '.vidya');
+        }
+      } catch {
+        pkgDir = path.join(targetDir, '.okf');
+      }
     }
   }
 
-  let metadata: VidyaMetadata = {
+  let metadata: NexusMetadata = {
     version: '0.1.0',
     generatedAt: new Date().toISOString(),
     repoPath: targetDir,
@@ -76,4 +83,5 @@ export async function loadVidyaPackage(targetDir: string): Promise<VidyaPackageD
   };
 }
 
-export const loadOKFPackage = loadVidyaPackage;
+export const loadVidyaPackage = loadNexusPackage;
+export const loadOKFPackage = loadNexusPackage;

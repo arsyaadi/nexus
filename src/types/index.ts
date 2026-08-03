@@ -74,13 +74,14 @@ export interface ModuleDocOutput {
 }
 
 /**
- * .vidya/metadata.json structure
+ * .nexus/metadata.json structure
  */
-export interface VidyaMetadata {
+export interface NexusMetadata {
   version: string;
   generatedAt: string;
   repoPath: string;
   modules: string[];
 }
 
-export type OKFMetadata = VidyaMetadata;
+export type VidyaMetadata = NexusMetadata;
+export type OKFMetadata = NexusMetadata;

@@ -13,14 +13,14 @@ import {
   TextRun,
   WidthType
 } from 'docx';
-import { VidyaExporter, VidyaExporterOptions } from './index.js';
-import { loadVidyaPackage } from './loader.js';
+import { NexusExporter, NexusExporterOptions } from './index.js';
+import { loadNexusPackage } from './loader.js';
 
-export class DocxExporter implements VidyaExporter {
-  async export(options: VidyaExporterOptions): Promise<void> {
-    const targetDir = options.vidyaDir || (options as any).okfDir || '.';
-    const { outputDir, title = 'Vidya End-to-End Documentation' } = options;
-    const pkg = await loadVidyaPackage(targetDir);
+export class DocxExporter implements NexusExporter {
+  async export(options: NexusExporterOptions): Promise<void> {
+    const targetDir = options.nexusDir || options.vidyaDir || options.okfDir || '.';
+    const { outputDir, title = 'Nexus End-to-End Documentation' } = options;
+    const pkg = await loadNexusPackage(targetDir);
 
     await fs.mkdir(outputDir, { recursive: true });
 

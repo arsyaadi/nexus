@@ -1,5 +1,9 @@
 {
   "mcpServers": {
+    "nexus": {
+      "command": "node",
+      "args": ["/Users/arsya/Desktop/projects/okf/dist/mcp/index.js"]
+    },
     "vidya": {
       "command": "node",
       "args": ["/Users/arsya/Desktop/projects/okf/dist/mcp/index.js"]

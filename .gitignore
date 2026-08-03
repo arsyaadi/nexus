@@ -1,5 +1,6 @@
 node_modules/
 dist/
-.okf/
+.nexus/
 .vidya/
+.okf/
 export/
