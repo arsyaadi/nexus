@@ -33,6 +33,21 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
+        name: 'okf_generate_e2e',
+        description:
+          'PRIMARY TOOL: Analyze repository and generate ONE SINGLE End-to-End Master Mermaid Diagram and unified documentation file (.okf/e2e_flow.md) covering all components end-to-end in ONE step. DO NOT loop per module.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            repo_path: {
+              type: 'string',
+              description: 'Path to target repository (default: current directory ".")',
+            },
+          },
+          required: ['repo_path'],
+        },
+      },
+      {
         name: 'okf_plan',
         description:
           'Analyze target repository Knowledge Graph and generate Execution Plan containing capability modules, priority, complexity, dependencies, and related files.',
@@ -155,6 +170,46 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
   try {
+    if (name === 'okf_generate_e2e') {
+      const repoPath = String(args?.repo_path || '.');
+      const analyzer = new CodebaseAnalyzer();
+
+      const graph = await analyzer.getKnowledgeGraph(repoPath);
+      const e2eGenerator = new E2EFlowGenerator();
+      const repoName = path.basename(path.resolve(repoPath)) || 'System';
+      const e2eFlow = e2eGenerator.generate(graph, repoName);
+
+      await writer.initializePackage(repoPath);
+      await writer.writeE2EFlow(repoPath, e2eFlow.markdownContent);
+
+      const metadata: OKFMetadata = {
+        version: '0.1.0',
+        generatedAt: new Date().toISOString(),
+        repoPath,
+        modules: [repoName],
+      };
+      await writer.writeMetadata(repoPath, metadata);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                status: 'success',
+                message: 'Master End-to-End Mermaid Flowchart & single unified documentation generated in ONE step.',
+                e2eFile: path.join(repoPath, '.okf', 'e2e_flow.md'),
+                masterMermaidDiagram: e2eFlow.masterMermaid,
+                preview: e2eFlow.markdownContent.slice(0, 1200) + '\n...[truncated preview]',
+              },
+              null,
+              2
+            ),
+          },
+        ],
+      };
+    }
+
     if (name === 'okf_plan') {
       const repoPath = String(args?.repo_path || '.');
       const analyzer = new CodebaseAnalyzer();
