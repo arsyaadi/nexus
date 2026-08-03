@@ -6,10 +6,10 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
 
-import { CodebaseMemoryProvider, MockGraphProvider } from '../analyzer/index.js';
+import { CodebaseMemoryProvider } from '../analyzer/index.js';
 import { ModulePlanner } from '../planner/index.js';
 import { FileSystemOKFWriter } from '../storage/index.js';
-import { GraphProvider, OKFMetadata } from '../types/index.js';
+import { OKFMetadata } from '../types/index.js';
 
 const server = new Server(
   {
@@ -40,10 +40,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             repo_path: {
               type: 'string',
               description: 'Absolute or relative path to the target repository',
-            },
-            mock: {
-              type: 'boolean',
-              description: 'Set to true to use mock graph for testing/offline mode',
             },
           },
           required: ['repo_path'],
@@ -131,11 +127,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     if (name === 'okf_plan') {
       const repoPath = String(args?.repo_path || '.');
-      const isMock = Boolean(args?.mock);
-
-      const provider: GraphProvider = isMock
-        ? new MockGraphProvider()
-        : new CodebaseMemoryProvider();
+      const provider = new CodebaseMemoryProvider();
 
       const graph = await provider.getKnowledgeGraph(repoPath);
       const plan = await planner.createPlan(graph, repoPath);
@@ -161,7 +153,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const fullPath = path.isAbsolute(relFile) ? relFile : path.join(repoPath, relFile);
         try {
           const content = await fs.readFile(fullPath, 'utf-8');
-          // Limit individual file size preview if large
           const truncatedContent = content.length > 8000 ? content.slice(0, 8000) + '\n...[truncated]' : content;
           fileSnippets.push({ filePath: relFile, content: truncatedContent });
         } catch {
