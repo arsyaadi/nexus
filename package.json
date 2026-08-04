@@ -12,7 +12,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && mkdir -p dist/ui && cp src/ui/viewer.html dist/ui/viewer.html && chmod +x dist/index.js dist/mcp/index.js",
     "start": "node dist/index.js",
     "mcp": "node dist/mcp/index.js",
     "test": "node dist/index.js run .",
@@ -34,6 +34,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.2.0",
     "docx": "^9.2.0",
+    "kuzu": "^0.11.3",
     "typescript": "^5.7.2"
   },
   "devDependencies": {

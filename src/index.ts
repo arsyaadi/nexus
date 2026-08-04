@@ -8,6 +8,7 @@ import { NexusStorage } from './storage/index.js';
 import { NexusWorkflowOrchestrator, PlaceholderUserReview } from './workflow/index.js';
 import { DocusaurusExporter } from './exporter/docusaurusExporter.js';
 import { DocxExporter } from './exporter/docxExporter.js';
+import { NexusUIServer } from './ui/server.js';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -24,6 +25,7 @@ Commands:
   init <path>                                   Index target repository AST
   plan <path>                                   Generate Execution Plan from Knowledge Graph
   run <path>                                    Execute full Workflow (Init → E2E Flow → Review → .nexus)
+  ui <path>                                     Launch Interactive Web Graph Visualizer UI (http://localhost:3333)
   export <path> --format <docusaurus|docx> --out <dir>   Export .nexus package to Docusaurus or Word (.docx)
   help                                          Show help information
 `);
@@ -59,6 +61,12 @@ Commands:
     }
 
     console.log('Export completed successfully.');
+    return;
+  }
+
+  if (command === 'ui' || command === 'view') {
+    const uiServer = new NexusUIServer(3333);
+    await uiServer.start(targetPath);
     return;
   }
 

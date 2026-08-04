@@ -171,12 +171,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   try {
     if (name === 'nexus_generate_e2e') {
-      const repoPath = String(args?.repo_path || '.');
+      const repoPath = path.resolve(String(args?.repo_path || '.'));
       const analyzer = new CodebaseAnalyzer();
 
+      await analyzer.indexRepository(repoPath);
       const graph = await analyzer.getKnowledgeGraph(repoPath);
       const e2eGenerator = new E2EFlowGenerator();
-      const repoName = path.basename(path.resolve(repoPath)) || 'System';
+      const repoName = path.basename(repoPath) || 'System';
       const e2eFlow = e2eGenerator.generate(graph, repoName);
 
       await writer.initializePackage(repoPath);
@@ -211,14 +212,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     if (name === 'nexus_plan') {
-      const repoPath = String(args?.repo_path || '.');
+      const repoPath = path.resolve(String(args?.repo_path || '.'));
       const analyzer = new CodebaseAnalyzer();
 
+      await analyzer.indexRepository(repoPath);
       const graph = await analyzer.getKnowledgeGraph(repoPath);
 
       // Generate Master E2E Flow documentation & diagram
       const e2eGenerator = new E2EFlowGenerator();
-      const repoName = path.basename(path.resolve(repoPath)) || 'System';
+      const repoName = path.basename(repoPath) || 'System';
       const e2eFlow = e2eGenerator.generate(graph, repoName);
 
       // Save .nexus/e2e_flow.md

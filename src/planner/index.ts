@@ -1,3 +1,4 @@
+import * as path from 'node:path';
 import { KnowledgeGraph, ExecutionPlan, ModuleTask, GraphNode, GraphEdge, GraphProvider } from '../types/index.js';
 import { E2EFlowGenerator, E2EFlowOutput } from './e2eFlowGenerator.js';
 
@@ -10,7 +11,7 @@ export interface Planner {
 
 export class ModulePlanner implements Planner {
   // Suffixes/prefixes to strip to isolate core business/technical capability
-  private static TECH_NOISE_REGEX = /(Controller|Service|Repository|Evaluator|Calculator|Checker|Manager|Helper|Util|Handler|Dto|Model|View|Api)$/i;
+  private static TECH_NOISE_REGEX = /(Controller|Service|Repository|Evaluator|Calculator|Checker|Manager|Helper|Util|Handler|Dto|Model|View|Api|Provider|Adapter|Executor|Generator|Orchestrator|Writer|Exporter)$/i;
 
   async createPlanFromProvider(provider: GraphProvider, repoPath: string): Promise<ExecutionPlan> {
     const graph = await provider.getKnowledgeGraph(repoPath);
@@ -21,9 +22,14 @@ export class ModulePlanner implements Planner {
     const nodeToModuleMap = new Map<string, string>();
     const modulesMap = new Map<string, { nodes: GraphNode[]; files: Set<string> }>();
 
-    // Step 1: Group nodes into business capability modules based on domain tokens (not folder names)
+    // Step 1: Group nodes into high-level business capability modules based on domain/folder structure
     for (const node of graph.nodes) {
-      const moduleName = this.extractCapabilityName(node.name);
+      // Ignore root folder node itself
+      if (node.type === 'Folder') continue;
+
+      const moduleName = this.extractCapabilityName(node);
+      if (!moduleName) continue;
+
       nodeToModuleMap.set(node.id, moduleName);
 
       if (!modulesMap.has(moduleName)) {
@@ -32,7 +38,9 @@ export class ModulePlanner implements Planner {
 
       const mod = modulesMap.get(moduleName)!;
       mod.nodes.push(node);
-      mod.files.add(node.filePath);
+      if (node.filePath) {
+        mod.files.add(node.filePath);
+      }
     }
 
     // Step 2: Determine inter-module dependencies and internal edge counts
@@ -102,14 +110,47 @@ export class ModulePlanner implements Planner {
   }
 
   /**
-   * Extracts core business capability name from symbol name (e.g. InvoiceController -> Invoice)
+   * Extracts core logical capability module name from node and file path
    */
-  private extractCapabilityName(nodeName: string): string {
-    const stripped = nodeName.replace(ModulePlanner.TECH_NOISE_REGEX, '');
-    if (stripped.length > 0) {
-      return stripped;
+  private extractCapabilityName(node: GraphNode): string {
+    const filePath = node.filePath || '';
+    const ext = path.extname(filePath).toLowerCase();
+    const basename = path.basename(filePath).toLowerCase();
+
+    // Skip non-code configuration and documentation files
+    if (['.json', '.md', '.lock', '.yml', '.yaml', '.gitignore'].includes(ext) || basename.startsWith('.')) {
+      return '';
     }
-    return nodeName;
+
+    const parts = filePath.split(/[/\\]+/).filter(Boolean);
+
+    // Heuristic 1: Subdirectory in src/ or lib/ or pkg/ or app/
+    const rootDirIndex = parts.findIndex((p) => ['src', 'lib', 'pkg', 'app', 'internal', 'modules'].includes(p));
+    if (rootDirIndex !== -1 && rootDirIndex + 1 < parts.length - 1) {
+      const folder = parts[rootDirIndex + 1];
+      return this.formatModuleName(folder);
+    }
+
+    // Heuristic 2: Subdirectory in target repo
+    if (parts.length >= 2) {
+      const folder = parts[parts.length - 2];
+      if (!['src', 'lib', 'pkg', 'app', 'internal', 'modules', 'dist', 'build'].includes(folder)) {
+        return this.formatModuleName(folder);
+      }
+    }
+
+    // Heuristic 3: Symbol or File basename stripped of technical suffixes
+    const nameWithoutExt = path.basename(node.name, path.extname(node.name));
+    const stripped = nameWithoutExt.replace(ModulePlanner.TECH_NOISE_REGEX, '');
+    const candidate = stripped.length > 0 ? stripped : nameWithoutExt;
+    return this.formatModuleName(candidate);
+  }
+
+  private formatModuleName(name: string): string {
+    const clean = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (clean === 'mcp') return 'MCP';
+    if (clean.length === 0) return 'Core';
+    return name.charAt(0).toUpperCase() + name.slice(1);
   }
 
   /**
@@ -139,3 +180,4 @@ export class ModulePlanner implements Planner {
     return priorityMap;
   }
 }
+

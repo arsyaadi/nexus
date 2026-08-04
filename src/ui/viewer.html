@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus Studio - AST Knowledge Graph</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Cytoscape.js Engine -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+
+  <style>
+    :root {
+      --bg-space: #030712;
+      --bg-hud: rgba(10, 16, 32, 0.85);
+      --bg-card: rgba(17, 24, 46, 0.75);
+      --border-neon: rgba(56, 189, 248, 0.35);
+
+      --color-cyan: #38bdf8;
+      --color-fuchsia: #d946ef;
+      --color-emerald: #34d399;
+      --color-amber: #fbbf24;
+      --color-violet: #a855f7;
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --font-display: 'Outfit', sans-serif;
+      --font-ui: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: var(--bg-space); color: var(--text-main); font-family: var(--font-ui); overflow: hidden; height: 100vh; width: 100vw; user-select: none; }
+    #app { display: flex; flex-direction: column; height: 100vh; position: relative; }
+
+    /* --- Cosmic Ambient Backdrop --- */
+    .cosmic-backdrop {
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(24, 38, 70, 0.75) 0%, rgba(3, 7, 18, 0.98) 75%, #030712 100%),
+                  radial-gradient(circle at 20% 20%, rgba(217, 70, 239, 0.18) 0%, transparent 45%),
+                  radial-gradient(circle at 80% 80%, rgba(52, 211, 153, 0.18) 0%, transparent 45%);
+      pointer-events: none; z-index: 1;
+    }
+
+    /* --- Draggable Floating Header Card --- */
+    .draggable-header {
+      position: absolute; top: 20px; left: 24px; z-index: 20;
+      background: var(--bg-hud); backdrop-filter: blur(24px); border: 1px solid var(--border-neon);
+      border-radius: 14px; padding: 12px 24px; display: flex; align-items: center; gap: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6); cursor: grab;
+    }
+    .draggable-header:active { cursor: grabbing; }
+
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-logo {
+      width: 30px; height: 30px; background: radial-gradient(circle, #d946ef 0%, #38bdf8 100%); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 900; font-size: 15px; color: #fff;
+      box-shadow: 0 0 16px rgba(217, 70, 239, 0.7);
+    }
+    .brand-title { font-family: var(--font-display); font-size: 17px; font-weight: 800; }
+    .brand-title span { background: linear-gradient(90deg, #d946ef, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .header-controls { display: flex; align-items: center; gap: 14px; }
+    .project-selector { display: flex; align-items: center; gap: 8px; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--border-neon); padding: 4px 10px; border-radius: 6px; }
+    .project-selector label { font-size: 10px; text-transform: uppercase; color: var(--color-cyan); font-weight: 700; }
+    .project-selector select { background: transparent; border: none; color: var(--text-main); font-family: var(--font-mono); font-weight: 600; font-size: 12px; outline: none; cursor: pointer; }
+
+    .stats-pills { display: flex; gap: 8px; }
+    .pill { background: var(--bg-card); border: 1px solid var(--border-neon); padding: 4px 10px; border-radius: 14px; font-size: 11px; color: var(--text-muted); }
+    .pill strong { color: var(--color-cyan); font-family: var(--font-mono); font-weight: 700; }
+
+    /* --- Draggable Floating Toolbar --- */
+    .draggable-toolbar {
+      position: absolute; top: 90px; left: 24px; z-index: 10; width: 300px; cursor: grab;
+    }
+    .draggable-toolbar:active { cursor: grabbing; }
+
+    .glass-card { background: var(--bg-card); backdrop-filter: blur(20px); border: 1px solid var(--border-neon); border-radius: 14px; padding: 16px; box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6); }
+    .search-box input { width: 100%; background: rgba(3, 7, 18, 0.8); border: 1px solid var(--border-neon); border-radius: 8px; padding: 10px 14px; color: var(--text-main); font-family: var(--font-mono); font-size: 12px; outline: none; }
+    .search-box input:focus { border-color: var(--color-fuchsia); box-shadow: 0 0 16px rgba(217, 70, 239, 0.3); }
+
+    .layout-buttons { display: flex; gap: 6px; margin-top: 12px; }
+    .btn-layout { flex: 1; background: rgba(0, 0, 0, 0.5); border: 1px solid var(--border-neon); color: var(--text-muted); border-radius: 8px; padding: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-layout:hover, .btn-layout.active { background: rgba(217, 70, 239, 0.2); color: var(--color-fuchsia); border-color: var(--color-fuchsia); box-shadow: 0 0 12px rgba(217, 70, 239, 0.3); }
+
+    .legend-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--text-muted); font-family: var(--font-mono); }
+    .legend-line { width: 14px; height: 3px; border-radius: 2px; }
+
+    /* --- Canvas Container --- */
+    #cy-container { flex: 1; width: 100%; height: 100vh; z-index: 2; }
+    #cy-container canvas {
+      filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.35)) drop-shadow(0 0 16px rgba(217, 70, 239, 0.25));
+    }
+
+    /* --- Draggable Floating Side Drawer Inspector --- */
+    .drawer {
+      position: absolute; top: 20px; right: 24px; width: 360px; max-height: calc(100vh - 40px); background: var(--bg-card);
+      backdrop-filter: blur(24px); border: 1px solid var(--border-neon); border-radius: 16px; padding: 24px;
+      z-index: 15; display: flex; flex-direction: column; transform: translateX(420px); transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: -12px 0 40px rgba(0, 0, 0, 0.7); overflow-y: auto; cursor: grab;
+    }
+    .drawer:active { cursor: grabbing; }
+    .drawer.open { transform: translateX(0); }
+    .drawer-header { display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 1px solid var(--border-neon); padding-bottom: 16px; margin-bottom: 16px; }
+    .drawer-title { font-family: var(--font-display); font-size: 18px; font-weight: 800; word-break: break-all; }
+    .close-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 22px; }
+    .drawer-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-top: 6px; text-transform: uppercase; }
+
+    .detail-section { margin-bottom: 16px; }
+    .detail-section h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-cyan); margin-bottom: 6px; font-weight: 700; }
+    .detail-section p, .detail-section ul { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+    .detail-section ul { list-style: none; }
+    .detail-section li { padding: 6px 10px; background: rgba(3, 7, 18, 0.7); border: 1px solid var(--border-neon); border-radius: 6px; margin-bottom: 6px; font-family: var(--font-mono); font-size: 11px; display: flex; justify-content: space-between; align-items: center; }
+    .rel-tag { background: rgba(56, 189, 248, 0.15); color: var(--color-cyan); padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="cosmic-backdrop"></div>
+
+    <!-- Floating Draggable Header -->
+    <div class="draggable-header" id="drag-header">
+      <div class="brand">
+        <div class="brand-logo">N</div>
+        <div class="brand-title">NEXUS <span>AST Graph</span></div>
+      </div>
+
+      <div class="header-controls">
+        <div class="project-selector">
+          <label>Project:</label>
+          <select id="project-select">
+            <option value="">Loading Projects...</option>
+          </select>
+        </div>
+
+        <div class="stats-pills">
+          <div class="pill">Nodes: <strong id="stat-nodes">0</strong></div>
+          <div class="pill">Edges: <strong id="stat-edges">0</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Draggable Toolbar -->
+    <div class="draggable-toolbar" id="drag-toolbar">
+      <div class="glass-card">
+        <div class="search-box">
+          <input type="text" id="search-input" placeholder="Search node, class, function..." />
+        </div>
+        <div class="layout-buttons">
+          <button class="btn-layout active" data-layout="concentric">Concentric</button>
+          <button class="btn-layout" data-layout="cose">Force 60FPS</button>
+          <button class="btn-layout" data-layout="breadthfirst">Hierarchy</button>
+        </div>
+        <div class="legend-bar">
+          <div class="legend-item"><div class="legend-line" style="background: #34d399;"></div> CALLS</div>
+          <div class="legend-item"><div class="legend-line" style="background: #d946ef;"></div> EXTENDS</div>
+          <div class="legend-item"><div class="legend-line" style="background: #fbbf24;"></div> IMPORTS</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="cy-container"></div>
+
+    <!-- Floating Draggable Drawer -->
+    <div class="drawer" id="node-drawer">
+      <div class="drawer-header">
+        <div>
+          <div class="drawer-title" id="drawer-title">Node Title</div>
+          <div class="drawer-badge" id="drawer-badge">Type</div>
+        </div>
+        <button class="close-btn" id="close-drawer">&times;</button>
+      </div>
+
+      <div class="detail-section">
+        <h4>File Location</h4>
+        <p id="drawer-path" style="font-family: var(--font-mono); word-break: break-all;"></p>
+      </div>
+
+      <div class="detail-section">
+        <h4>Incoming Relations (Callers)</h4>
+        <ul id="drawer-incoming"></ul>
+      </div>
+
+      <div class="detail-section">
+        <h4>Outgoing Relations (Callees)</h4>
+        <ul id="drawer-outgoing"></ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let cy = null;
+    let fullNodes = [];
+    let fullEdges = [];
+    let projectsList = [];
+
+    const COLOR_MAP = {
+      File: '#38bdf8',       // Electric Cyan
+      Class: '#d946ef',      // Neon Magenta
+      Function: '#34d399',   // Emerald Mint Green
+      Interface: '#fbbf24',  // Solar Amber
+      Method: '#a855f7',     // Deep Violet
+      Folder: '#64748b'
+    };
+
+    function makeDraggable(el) {
+      let isDragging = false;
+      let offsetX = 0, offsetY = 0;
+
+      el.addEventListener('mousedown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON') return;
+        isDragging = true;
+        offsetX = e.clientX - el.offsetLeft;
+        offsetY = e.clientY - el.offsetTop;
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        el.style.left = `${e.clientX - offsetX}px`;
+        el.style.top = `${e.clientY - offsetY}px`;
+        el.style.right = 'auto';
+      });
+
+      document.addEventListener('mouseup', () => { isDragging = false; });
+    }
+
+    async function initApp() {
+      makeDraggable(document.getElementById('drag-header'));
+      makeDraggable(document.getElementById('drag-toolbar'));
+      makeDraggable(document.getElementById('node-drawer'));
+
+      await loadProjectsList();
+      await loadGraph();
+
+      document.getElementById('project-select').addEventListener('change', (e) => {
+        if (e.target.value) loadGraph(e.target.value);
+      });
+
+      document.querySelectorAll('.btn-layout').forEach((btn) => {
+        btn.onclick = () => {
+          document.querySelectorAll('.btn-layout').forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          if (cy) {
+            const l = cy.layout({ name: btn.dataset.layout, animate: true, animationDuration: 500, fit: true, padding: 50 });
+            l.run();
+          }
+        };
+      });
+    }
+
+    async function loadProjectsList() {
+      try {
+        const res = await fetch('/api/projects');
+        projectsList = await res.json();
+        const select = document.getElementById('project-select');
+
+        if (projectsList.length > 0) {
+          select.innerHTML = projectsList
+            .map((p) => `<option value="${p.repoPath}">${p.projectName} (${p.nodeCount || 0} nodes)</option>`)
+            .join('');
+        } else {
+          select.innerHTML = `<option value="">No Projects Found</option>`;
+        }
+      } catch (err) {
+        console.error('Failed to load projects:', err);
+      }
+    }
+
+    async function loadGraph(repoPath = '') {
+      try {
+        const url = repoPath ? `/api/graph?repo=${encodeURIComponent(repoPath)}` : '/api/graph';
+        const res = await fetch(url);
+        const data = await res.json();
+
+        document.getElementById('stat-nodes').innerText = data.nodes.length;
+        document.getElementById('stat-edges').innerText = data.edges.length;
+
+        fullNodes = data.nodes;
+        fullEdges = data.edges;
+
+        renderCenteredCytoscapeGraph(fullNodes, fullEdges);
+      } catch (err) {
+        console.error('Failed to load graph:', err);
+      }
+    }
+
+    // --- Perfectly Centered Cytoscape Graph Renderer ---
+    function renderCenteredCytoscapeGraph(nodesData, edgesData) {
+      const elements = [];
+
+      nodesData.forEach((n) => {
+        if (n.type === 'Folder') return;
+
+        elements.push({
+          data: {
+            id: n.id,
+            name: n.name,
+            type: n.type,
+            filePath: n.filePath,
+            color: COLOR_MAP[n.type] || '#38bdf8'
+          }
+        });
+      });
+
+      edgesData.forEach((e, idx) => {
+        if (e.relationship === 'CONTAINS_FILE') return;
+
+        elements.push({
+          data: {
+            id: `e_${idx}`,
+            source: e.source,
+            target: e.target,
+            relationship: e.relationship
+          }
+        });
+      });
+
+      cy = cytoscape({
+        container: document.getElementById('cy-container'),
+        elements,
+        style: [
+          {
+            selector: 'node',
+            style: {
+              'background-color': 'data(color)',
+              'label': 'data(name)',
+              'color': '#cbd5e1', // SOFT SLATE SILVER
+              'font-family': 'Inter',
+              'font-size': '9px',
+              'font-weight': '500',
+              'text-valign': 'bottom',
+              'text-margin-y': 5,
+              'text-max-width': '70px',
+              'text-wrap': 'ellipsis',
+              'min-zoomed-font-size': 8,
+              'width': 12,
+              'height': 12,
+              'border-width': 3,
+              'border-color': 'data(color)',
+              'border-opacity': 0.35,
+              'shadow-blur': 12,
+              'shadow-color': 'data(color)',
+              'shadow-opacity': 0.7,
+              'overlay-opacity': 0
+            }
+          },
+          {
+            selector: 'node[type = "Class"]',
+            style: { 'shape': 'diamond', 'width': 15, 'height': 15 }
+          },
+          {
+            selector: 'node[type = "Interface"]',
+            style: { 'shape': 'hexagon', 'width': 15, 'height': 15 }
+          },
+          {
+            selector: 'edge',
+            style: {
+              'width': 1.5,
+              'line-color': 'rgba(226, 232, 240, 0.2)',
+              'curve-style': 'bezier',
+              'target-arrow-shape': 'triangle',
+              'target-arrow-color': 'rgba(226, 232, 240, 0.4)',
+              'arrow-scale': 0.75
+            }
+          },
+          {
+            selector: 'edge[relationship = "CALLS"]',
+            style: {
+              'line-color': '#34d399',
+              'target-arrow-color': '#34d399',
+              'width': 1.8,
+              'opacity': 0.85,
+              'shadow-blur': 8,
+              'shadow-color': '#34d399'
+            }
+          },
+          {
+            selector: 'edge[relationship = "EXTENDS"], edge[relationship = "IMPLEMENTS"]',
+            style: {
+              'line-color': '#d946ef',
+              'target-arrow-color': '#d946ef',
+              'width': 1.8,
+              'opacity': 0.85,
+              'shadow-blur': 8,
+              'shadow-color': '#d946ef'
+            }
+          },
+          {
+            selector: 'edge[relationship = "IMPORTS"], edge[relationship = "EXPORTS"]',
+            style: {
+              'line-color': '#fbbf24',
+              'target-arrow-color': '#fbbf24',
+              'width': 1.5,
+              'opacity': 0.75,
+              'shadow-blur': 6,
+              'shadow-color': '#fbbf24'
+            }
+          },
+          {
+            selector: 'node:selected',
+            style: {
+              'border-color': '#ffffff',
+              'border-width': 4,
+              'width': 20,
+              'height': 20,
+              'color': '#ffffff',
+              'font-size': '11px',
+              'font-weight': '700',
+              'text-max-width': '180px',
+              'shadow-blur': 20,
+              'shadow-color': 'data(color)'
+            }
+          },
+          {
+            selector: '.dimmed',
+            style: { 'opacity': 0.12, 'label': '' }
+          },
+          {
+            selector: '.focused',
+            style: { 'opacity': 1, 'z-index': 999 }
+          }
+        ],
+        layout: {
+          name: 'concentric',
+          animate: true,
+          animationDuration: 600,
+          fit: true,         // PERFECT CENTERING ON LOAD!
+          padding: 60,
+          concentric: (node) => (node.data('type') === 'Class' ? 3 : node.data('type') === 'Interface' ? 2 : 1),
+          levelWidth: () => 1,
+          minNodeSpacing: 65
+        }
+      });
+
+      // Auto-center and fit graph perfectly on initial layout ready
+      cy.on('layoutstop', () => {
+        cy.center();
+        cy.fit(undefined, 60);
+      });
+
+      function focusNeighborhood(selectedNode) {
+        const neighborhood = selectedNode.closedNeighborhood();
+        cy.batch(() => {
+          cy.elements().removeClass('focused').addClass('dimmed');
+          neighborhood.removeClass('dimmed').addClass('focused');
+        });
+      }
+
+      function clearFocus() {
+        cy.batch(() => {
+          cy.elements().removeClass('dimmed').removeClass('focused');
+        });
+      }
+
+      cy.on('tap', 'node', (evt) => {
+        const node = evt.target;
+        focusNeighborhood(node);
+        openDrawer(node.data());
+      });
+
+      cy.on('tap', (evt) => {
+        if (evt.target === cy) {
+          clearFocus();
+          document.getElementById('node-drawer').classList.remove('open');
+        }
+      });
+    }
+
+    function openDrawer(node) {
+      document.getElementById('drawer-title').innerText = node.name;
+      document.getElementById('drawer-path').innerText = node.filePath || 'Root';
+
+      const badge = document.getElementById('drawer-badge');
+      badge.innerText = node.type;
+      badge.style.background = COLOR_MAP[node.type] || '#38bdf8';
+      badge.style.color = '#fff';
+
+      const incoming = fullEdges.filter((e) => e.target === node.id);
+      const outgoing = fullEdges.filter((e) => e.source === node.id);
+
+      document.getElementById('drawer-incoming').innerHTML = incoming.length > 0
+        ? incoming.map((e) => `<li><span>${e.source}</span> <span class="rel-tag">${e.relationship}</span></li>`).join('')
+        : '<li>None (Entry Point)</li>';
+
+      document.getElementById('drawer-outgoing').innerHTML = outgoing.length > 0
+        ? outgoing.map((e) => `<li><span>${e.target}</span> <span class="rel-tag">${e.relationship}</span></li>`).join('')
+        : '<li>None</li>';
+
+      document.getElementById('node-drawer').classList.add('open');
+    }
+
+    document.getElementById('close-drawer').onclick = () => {
+      document.getElementById('node-drawer').classList.remove('open');
+    };
+
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase();
+      if (!q || !cy) return;
+      const found = cy.nodes().filter((n) => n.data('name').toLowerCase().includes(q));
+      if (found.length > 0) {
+        cy.center(found[0]);
+        found[0].select();
+        const neighborhood = found[0].closedNeighborhood();
+        cy.batch(() => {
+          cy.elements().removeClass('focused').addClass('dimmed');
+          neighborhood.removeClass('dimmed').addClass('focused');
+        });
+        openDrawer(found[0].data());
+      }
+    });
+
+    initApp();
+  </script>
+</body>
+</html>

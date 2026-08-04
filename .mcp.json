@@ -2,7 +2,7 @@
   "mcpServers": {
     "nexus": {
       "command": "node",
-      "args": ["/Users/arsya/Desktop/projects/okf/dist/mcp/index.js"]
+      "args": ["/Users/arsya/Desktop/projects/nexus/dist/mcp/index.js"]
     }
   }
 }
