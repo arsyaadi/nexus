@@ -1,22 +1,39 @@
 # Nexus
 
-Standalone AST Knowledge Graph & Master End-to-End Flow Extraction Engine. Turn source code into structured knowledge packages (`.nexus`) and publishable documentation (Word `.docx` & Docusaurus).
+Standalone AST Knowledge Graph & Master End-to-End Flow Extraction Engine. Turn source code into structured knowledge packages (`.nexus`), interactive visual graphs (`nexus ui`), and publishable documentation (Word `.docx` & Docusaurus).
 
-Nexus analyzes codebases using a built-in AST knowledge graph analyzer (`LocalGraphProvider`), constructs Master End-to-End System Flowcharts, groups functionality into capability-based modules, and generates versionable `.nexus` packages with Mermaid process diagrams and business specifications.
+Nexus analyzes codebases using a built-in High-Performance AST Knowledge Graph Analyzer (`SqliteGraphProvider`), constructs Master End-to-End System Flowcharts, groups functionality into capability-based modules, and provides an interactive Web Graph Studio.
 
-Nexus operates as a Model Context Protocol (MCP) Server for Claude Code, Antigravity, Cursor, and Windsurf.
+Nexus operates as a CLI tool and a Model Context Protocol (MCP) Server for Claude Code, Antigravity, Cursor, and Windsurf.
 
 ---
 
 ## Features
 
-- **Built-in Standalone AST Engine (`LocalGraphProvider`)**: Parses TypeScript & JavaScript source code using the TypeScript Compiler API with zero external service dependencies.
-- **Single-Step Master E2E Flow Engine (`nexus_generate_e2e`)**: Analyzes the codebase Knowledge Graph and generates one Master Mermaid E2E Flowchart (`flowchart TD`) connecting all components in one step.
-- **Technical & Business Specifications**: Technical contracts with Mermaid sequence diagrams and standardized business flows with Mermaid flowcharts.
-- **Mermaid Auto-Injection Safeguard**: Ensures valid visual Mermaid process diagrams in all documentation outputs.
-- **Native Word Exporter (`.docx`)**: Converts `.nexus` packages into a single `documentation.docx` file. Parses inline formatting, markdown tables, callouts, and embeds visual PNG process flow diagrams without external CLI dependencies (`pandoc` or `python`).
+- **SQLite Graph Engine (`SqliteGraphProvider`)**: Fast, zero-C++ native compilation overhead graph storage using Node 22 `node:sqlite`. Persists knowledge graphs in `$HOME/.nexus/graphs/` with automatic SHA-256 project registry tracking.
+- **Interactive Web Graph Studio (`nexus ui`)**: Launches a 60FPS Cytoscape-powered Web UI on `http://localhost:3333` featuring:
+  - **Neon Glow & Multi-Color Edge Palette**: Distinct glowing visual edge colors for `CALLS`, `EXTENDS`, `IMPLEMENTS`, and `IMPORTS` relationships.
+  - **Neighborhood Focus Dimming**: Clicking or searching any node dims un-related nodes to 12% opacity so component dependency flows are instantly clear.
+  - **Continuous Galaxy Meteor Drift**: Smooth organic floating drift physics bringing concentric galaxy orbits to life.
+  - **Draggable Glassmorphic HUD Widgets**: Header, Toolbar, and Inspector Drawer cards can be freely dragged around the viewport.
+  - **Multi-Project Switcher**: Dropdown selector to switch between any indexed repository seamlessly.
+- **Multi-Language Deep AST Extractor**: Parses TypeScript, JavaScript, Go, Python, Java, Rust, PHP, C/C++, C#, Ruby, and Swift.
+- **Single-Step Master E2E Flow Engine (`nexus_generate_e2e`)**: Analyzes the codebase Knowledge Graph and generates a Master Mermaid E2E Flowchart (`flowchart TD`) with subgraph module boundaries in one step.
+- **Native Word Exporter (`.docx`)**: Converts `.nexus` packages into a single `documentation.docx` file with inline callouts, markdown tables, and embedded Mermaid process diagrams without external dependencies (`pandoc` or `python`).
 - **Docusaurus Exporter**: Exports `.nexus` packages into a ready-to-build Docusaurus documentation site with `docs/e2e-flow.md` auto-configured at the top of `sidebars.ts`.
 - **MCP Integration**: Full suite of MCP tools (`nexus_generate_e2e`, `nexus_plan`, `nexus_get_module_context`, `nexus_save_module_doc`, `nexus_finalize`, `nexus_export`).
+
+---
+
+## Interactive Web UI Visualizer
+
+Launch the Web UI Visualizer on any repository:
+
+```bash
+npx nexus-mcp ui /path/to/target-repo
+```
+
+Then open your browser at **`http://localhost:3333`**.
 
 ---
 
@@ -60,6 +77,9 @@ claude mcp add nexus -- npx -y @arstzy/nexus-mcp
 ```bash
 # Index target repository
 npx nexus-mcp init /path/to/target-repo
+
+# Launch Interactive Web Graph Studio (http://localhost:3333)
+npx nexus-mcp ui /path/to/target-repo
 
 # Generate execution plan
 npx nexus-mcp plan /path/to/target-repo
