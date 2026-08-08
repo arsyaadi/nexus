@@ -3,10 +3,10 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import * as crypto from 'node:crypto';
 import { GraphEdge, GraphNode, GraphProvider, KnowledgeGraph } from '../types/index.js';
-import { TreeSitterGraphProvider } from './treeSitterGraphProvider.js';
+import { LocalGraphProvider } from './localGraphProvider.js';
 
 export class LadybugGraphProvider implements GraphProvider {
-  private fallbackProvider = new TreeSitterGraphProvider();
+  private fallbackProvider = new LocalGraphProvider();
 
   private getGlobalNexusDir(): string {
     return path.join(os.homedir(), '.nexus');

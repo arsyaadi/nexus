@@ -1,12 +1,9 @@
 import { KnowledgeGraph, GraphProvider } from '../types/index.js';
 import { LocalGraphProvider } from './localGraphProvider.js';
-import { KuzuGraphProvider } from './kuzuGraphProvider.js';
 import { SqliteGraphProvider } from './sqliteGraphProvider.js';
-import { CodebaseMemoryProvider } from './codebaseMemoryProvider.js';
 import { LadybugGraphProvider } from './ladybugGraphProvider.js';
-import { TreeSitterGraphProvider } from './treeSitterGraphProvider.js';
 
-export { LocalGraphProvider, KuzuGraphProvider, SqliteGraphProvider, CodebaseMemoryProvider, LadybugGraphProvider, TreeSitterGraphProvider };
+export { LocalGraphProvider, SqliteGraphProvider, LadybugGraphProvider };
 
 export interface Analyzer extends GraphProvider {
   analyze(repoPath: string): Promise<KnowledgeGraph>;
@@ -57,4 +54,3 @@ export class CodebaseAnalyzer implements Analyzer {
     return this.getKnowledgeGraph(repoPath);
   }
 }
-

@@ -8,13 +8,13 @@
 
 ## 1. Goal
 
-Provide an immediate, easy-to-understand onboarding document (`.nexus/e2e_flow.md`) for new team members, product managers, and developers joining a project. The document must communicate **what the system does and its macro business flow** without flooding the reader with 8,000 lines of low-level function code or raw AST dumps.
+Provide an immediate, easy-to-understand onboarding document (`.nexus/e2e_flow.md`) for new team members, product managers, and developers joining a project. The document communicates **what the system does and its macro business flow** without flooding the reader with thousands of lines of low-level function code or raw AST dumps.
 
 ---
 
 ## 2. Core Principles
 
-1. **Macro Architecture Focus (Level 0)**: Show only top-level domains/sub-systems (e.g., API Entrypoints, Core Business Engine, Database/Storage, Export Engine).
+1. **Macro Architecture Focus (Level 0)**: Show only top-level domains and sub-systems (e.g., API Entrypoints, Core Business Engine, Database/Storage, Export Engine).
 2. **Natural Industry Terminology**: Avoid robotic AI translations. Use standard dev/PM terms:
    - `API / Entrypoint`
    - `Core Logic / Business Engine`
@@ -33,16 +33,16 @@ Provide an immediate, easy-to-understand onboarding document (`.nexus/e2e_flow.m
 # [Project Name] - System & Business Flow Overview
 
 > 💡 **Level 0 Onboarding & Architecture Summary**
-> Dokumen ini menyajikan alur arsitektur dan bisnis utama sistem dari API Entrypoint hingga Output.
+> This document presents the system architecture and primary business flow from API Entrypoints to Data Outputs.
 
 ---
 
-## 1. Gambaran Umum Sistem
-Ringkasan singkat fungsi utama aplikasi dan domain bisnis utama.
+## 1. System Overview
+Concise summary of the application's primary functions and business domain.
 
 ---
 
-## 2. Diagram Alur Utama Sistem (Macro Flowchart)
+## 2. Master System Flowchart
 ```mermaid
 flowchart TD
     subgraph Entrypoints["API / Entrypoint"]
@@ -65,7 +65,7 @@ flowchart TD
 
 ---
 
-## 3. Diagram Urutan Proses (End-to-End Sequence Diagram)
+## 3. End-to-End Sequence Diagram
 ```mermaid
 sequenceDiagram
     autonumber
@@ -85,18 +85,18 @@ sequenceDiagram
 
 ---
 
-## 4. Modul Bisnis Utama
-Tabel ringkas modul, fungsi utama, dan berkas entri kunci.
+## 4. Primary Capability Modules
+Concise summary table of capability modules, core functions, and primary entrypoint files.
 
-| Modul | Fungsi Utama | Entrypoint / Core File |
-|-------|--------------|------------------------|
+| Module | Primary Purpose | Core File / Entrypoint |
+|:---|:---|:---|
 | **Core** | Business Logic & Workflow | `src/index.ts` |
 | **Export** | Document & Excel Generation | `src/exporter/index.ts` |
 
 ---
 
-## 5. Matriks Dependensi Modul
-Tabel dependensi tingkat tinggi antar-modul (tanpa baris function internal).
+## 5. Module Dependency Matrix
+High-level module dependency matrix (excluding internal function lines).
 ```
 
 ---
