@@ -35,7 +35,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'nexus_generate_e2e',
         description:
-          'PRIMARY TOOL: Analyze repository and generate ONE SINGLE End-to-End Master Mermaid Diagram and unified documentation file (.nexus/e2e_flow.md) covering all components end-to-end in ONE step. DO NOT loop per module.',
+          'PRIMARY TOOL: Analyze repository AST graph and generate Master E2E Mermaid Flowchart & Sequence Diagram into .nexus/e2e_flow.md. [HUMANIZER RULE]: The AI Host SHOULD use its LLM reasoning power to enrich .nexus/e2e_flow.md with natural business domain explanations, avoiding robotic AI filler words (e.g. "delve into", "tapestry", "seamlessly", "merupakan modul yang..."). Write naturally like a senior engineer.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -89,7 +89,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'nexus_save_module_doc',
         description:
-          'Save technical documentation and draft business flow for a single module into .nexus package structure.',
+          'Save technical documentation and draft business flow for a single module into .nexus package structure. [HUMANIZER RULE]: Write in clean, active, direct human style. Avoid robotic AI filler phrases ("tapestry", "delve", "merupakan modul yang bertugas").',
         inputSchema: {
           type: 'object',
           properties: {
