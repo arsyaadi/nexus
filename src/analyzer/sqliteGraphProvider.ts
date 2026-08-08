@@ -4,10 +4,10 @@ import * as os from 'node:os';
 import * as crypto from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 import { GraphEdge, GraphNode, GraphProvider, KnowledgeGraph } from '../types/index.js';
-import { LocalGraphProvider } from './localGraphProvider.js';
+import { TreeSitterGraphProvider } from './treeSitterGraphProvider.js';
 
 export class SqliteGraphProvider implements GraphProvider {
-  private fallbackProvider = new LocalGraphProvider();
+  private fallbackProvider = new TreeSitterGraphProvider();
 
   private getGlobalNexusDir(): string {
     return path.join(os.homedir(), '.nexus');

@@ -5,7 +5,7 @@ import * as crypto from 'node:crypto';
 import { GraphEdge, GraphNode, GraphProvider, KnowledgeGraph } from '../types/index.js';
 import { TreeSitterGraphProvider } from './treeSitterGraphProvider.js';
 
-export class KuzuGraphProvider implements GraphProvider {
+export class LadybugGraphProvider implements GraphProvider {
   private fallbackProvider = new TreeSitterGraphProvider();
 
   private getGlobalNexusDir(): string {
@@ -25,7 +25,7 @@ export class KuzuGraphProvider implements GraphProvider {
     const hash = crypto.createHash('sha256').update(absRoot).digest('hex').slice(0, 12);
     const rawName = path.basename(absRoot) || 'root';
     const projectName = rawName.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
-    const dbName = `${projectName}_${hash}.kuzu`;
+    const dbName = `${projectName}_${hash}.ladybug`;
     const dbPath = path.join(this.getGraphsDir(), dbName);
     return { absRoot, projectName, hash, dbPath, dbName };
   }
@@ -34,20 +34,20 @@ export class KuzuGraphProvider implements GraphProvider {
     const { absRoot, projectName, hash, dbPath, dbName } = this.getProjectKey(repoPath);
     await fs.mkdir(this.getGraphsDir(), { recursive: true });
 
-    let kuzuModule: any;
+    let ladybugModule: any;
     try {
-      kuzuModule = await import('kuzu');
+      ladybugModule = await import('@ladybugdb/core');
     } catch (err) {
-      console.error('[Nexus KuzuGraphProvider] Warning: Could not load native kuzu module, using LocalGraphProvider fallback:', err);
+      console.error('[Nexus LadybugGraphProvider] Warning: Could not load @ladybugdb/core module, using LocalGraphProvider fallback:', err);
       return this.fallbackProvider.indexRepository(repoPath);
     }
 
-    const { Database, Connection } = kuzuModule;
+    const { Database, Connection } = ladybugModule;
 
     // Build KnowledgeGraph AST using built-in parser
     const astGraph = await this.fallbackProvider.getKnowledgeGraph(repoPath);
 
-    // Initialize Kuzu Database
+    // Initialize Ladybug Database
     const db = new Database(dbPath);
     const conn = new Connection(db);
 
@@ -74,7 +74,7 @@ export class KuzuGraphProvider implements GraphProvider {
         const escapedTarget = this.escapeString(edge.target);
         const escapedRel = this.escapeString(edge.relationship);
 
-        // Ensure target node exists in KuzuDB
+        // Ensure target node exists in LadybugDB
         await conn.query(
           `MERGE (b:Node {id: '${escapedTarget}'}) ON CREATE SET b.name = '${escapedTarget}', b.type = 'External', b.filePath = ''`
         );
@@ -88,7 +88,7 @@ export class KuzuGraphProvider implements GraphProvider {
       await db.close();
     }
 
-    // Update global project registry with Kuzu engine details
+    // Update global project registry with Ladybug engine details
     await this.updateProjectsRegistry({
       repoPath: absRoot,
       projectName,
@@ -97,16 +97,16 @@ export class KuzuGraphProvider implements GraphProvider {
       nodeCount: astGraph.nodes.length,
       edgeCount: astGraph.edges.length,
       lastIndexedAt: new Date().toISOString(),
-      engine: 'kuzu',
+      engine: 'ladybug',
     });
   }
 
   async getKnowledgeGraph(repoPath: string): Promise<KnowledgeGraph> {
     const { dbPath } = this.getProjectKey(repoPath);
 
-    let kuzuModule: any;
+    let ladybugModule: any;
     try {
-      kuzuModule = await import('kuzu');
+      ladybugModule = await import('@ladybugdb/core');
     } catch {
       return this.fallbackProvider.getKnowledgeGraph(repoPath);
     }
@@ -117,7 +117,7 @@ export class KuzuGraphProvider implements GraphProvider {
       await this.indexRepository(repoPath);
     }
 
-    const { Database, Connection } = kuzuModule;
+    const { Database, Connection } = ladybugModule;
     let db: any;
     let conn: any;
 
@@ -136,10 +136,10 @@ export class KuzuGraphProvider implements GraphProvider {
       const nodeRows = await nodeQueryResult.getAll();
       for (const row of nodeRows) {
         nodes.push({
-          id: String(row[0]),
-          name: String(row[1]),
-          type: String(row[2]) as any,
-          filePath: String(row[3]),
+          id: String(row['n.id'] ?? row[0]),
+          name: String(row['n.name'] ?? row[1]),
+          type: String(row['n.type'] ?? row[2]) as any,
+          filePath: String(row['n.filePath'] ?? row[3]),
         });
       }
 
@@ -147,9 +147,9 @@ export class KuzuGraphProvider implements GraphProvider {
       const edgeRows = await edgeQueryResult.getAll();
       for (const row of edgeRows) {
         edges.push({
-          source: String(row[0]),
-          target: String(row[1]),
-          relationship: String(row[2]) as any,
+          source: String(row['a.id'] ?? row[0]),
+          target: String(row['b.id'] ?? row[1]),
+          relationship: String(row['r.relationship'] ?? row[2]) as any,
         });
       }
     } catch {
