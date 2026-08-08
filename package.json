@@ -1,11 +1,11 @@
 {
   "name": "@arstzy/nexus-mcp",
   "version": "0.2.0",
-  "description": "Nexus - Standalone AST Knowledge Graph & Master End-to-End Flow Extraction Engine",
-  "main": "dist/index.js",
+  "description": "Nexus - Standalone MCP Server & AST Knowledge Graph Engine for AI Hosts",
+  "main": "dist/mcp/index.js",
   "type": "module",
   "bin": {
-    "nexus": "./dist/index.js",
+    "nexus": "./dist/mcp/index.js",
     "nexus-mcp": "./dist/mcp/index.js"
   },
   "files": [
@@ -13,9 +13,9 @@
   ],
   "scripts": {
     "build": "tsc && mkdir -p dist/ui && cp src/ui/viewer.html dist/ui/viewer.html && mkdir -p dist/wasm && cp node_modules/tree-sitter-wasms/out/tree-sitter-*.wasm dist/wasm/ && cp node_modules/web-tree-sitter/web-tree-sitter.wasm dist/wasm/tree-sitter.wasm && chmod +x dist/index.js dist/mcp/index.js",
-    "start": "node dist/index.js",
+    "start": "node dist/mcp/index.js",
     "mcp": "node dist/mcp/index.js",
-    "test": "node dist/index.js run .",
+    "test": "npm run build",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
