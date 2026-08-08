@@ -1,50 +1,29 @@
-# Nexus
+# Nexus MCP
 
-Standalone AST Knowledge Graph & Master End-to-End Flow Extraction Engine. Turn source code into structured knowledge packages (`.nexus`), interactive visual graphs (`nexus ui`), and publishable documentation (Word `.docx` & Docusaurus).
-
-Nexus analyzes codebases using a built-in High-Performance AST Knowledge Graph Analyzer (`SqliteGraphProvider`), constructs Master End-to-End System Flowcharts, groups functionality into capability-based modules, and provides an interactive Web Graph Studio.
-
-Nexus operates as a CLI tool and a Model Context Protocol (MCP) Server for Claude Code, Antigravity, Cursor, and Windsurf.
+Nexus turns codebases into structured Knowledge Graphs, Mermaid flowcharts, and Word (.docx) documentation. It runs as a Model Context Protocol (MCP) server for AI assistants like Claude Code, Antigravity, Cursor, and Windsurf.
 
 ---
 
-## Features
+## What It Does
 
-- **SQLite Graph Engine (`SqliteGraphProvider`)**: Fast, zero-C++ native compilation overhead graph storage using Node 22 `node:sqlite`. Persists knowledge graphs in `$HOME/.nexus/graphs/` with automatic SHA-256 project registry tracking.
-- **Interactive Web Graph Studio (`nexus ui`)**: Launches a 60FPS Cytoscape-powered Web UI on `http://localhost:3333` featuring:
-  - **Neon Glow & Multi-Color Edge Palette**: Distinct glowing visual edge colors for `CALLS`, `EXTENDS`, `IMPLEMENTS`, and `IMPORTS` relationships.
-  - **Neighborhood Focus Dimming**: Clicking or searching any node dims un-related nodes to 12% opacity so component dependency flows are instantly clear.
-  - **Continuous Galaxy Meteor Drift**: Smooth organic floating drift physics bringing concentric galaxy orbits to life.
-  - **Draggable Glassmorphic HUD Widgets**: Header, Toolbar, and Inspector Drawer cards can be freely dragged around the viewport.
-  - **Multi-Project Switcher**: Dropdown selector to switch between any indexed repository seamlessly.
-- **Multi-Language Deep AST Extractor**: Parses TypeScript, JavaScript, Go, Python, Java, Rust, PHP, C/C++, C#, Ruby, and Swift.
-- **Single-Step Master E2E Flow Engine (`nexus_generate_e2e`)**: Analyzes the codebase Knowledge Graph and generates a Master Mermaid E2E Flowchart (`flowchart TD`) with subgraph module boundaries in one step.
-- **Native Word Exporter (`.docx`)**: Converts `.nexus` packages into a single `documentation.docx` file with inline callouts, markdown tables, and embedded Mermaid process diagrams without external dependencies (`pandoc` or `python`).
-- **Docusaurus Exporter**: Exports `.nexus` packages into a ready-to-build Docusaurus documentation site with `docs/e2e-flow.md` auto-configured at the top of `sidebars.ts`.
-- **MCP Integration**: Full suite of MCP tools (`nexus_generate_e2e`, `nexus_plan`, `nexus_get_module_context`, `nexus_save_module_doc`, `nexus_finalize`, `nexus_export`).
+- **AST Knowledge Graphing**: Indexes call graphs, dependencies, and file relationships using an embedded LadybugDB graph engine (`@ladybugdb/core`).
+- **End-to-End System Diagrams**: Generates master Mermaid flowcharts (`flowchart TD`) and sequence diagrams covering system entrypoints to data outputs.
+- **Domain Auto-Detection**: Classifies repositories (REST APIs, frontend apps, report services, auth services, CLI tools) and builds matching feature catalogs.
+- **Word Document Export**: Exports documentation into `.docx` files with embedded flowcharts, callout boxes, and formatted tables without needing `pandoc` or `python`.
+- **Anti-AI-Slop Generator**: Sanitizes robotic AI clichés and enforces direct, senior-engineer writing style.
 
 ---
 
-## Interactive Web UI Visualizer
+## Setup
 
-Launch the Web UI Visualizer on any repository:
+Add `@arstzy/nexus-mcp` to your MCP configuration:
 
-```bash
-npx nexus-mcp ui /path/to/target-repo
-```
-
-Then open your browser at **`http://localhost:3333`**.
-
----
-
-## MCP Server Setup
-
-### Claude Code
+### Claude Code CLI
 ```bash
 claude mcp add nexus -- npx -y @arstzy/nexus-mcp
 ```
 
-### Antigravity / Cursor / Windsurf (`.mcp.json` / `mcp_config.json`)
+### Antigravity / Cursor / Windsurf (`mcp_config.json` or `.mcp.json`)
 ```json
 {
   "mcpServers": {
@@ -58,54 +37,48 @@ claude mcp add nexus -- npx -y @arstzy/nexus-mcp
 
 ---
 
-## Generation Modes
+## Prompt Examples
 
-### Mode 1: Single Master E2E Flow
-- **Tool**: `nexus_generate_e2e` / CLI `npx nexus-mcp run .`
-- **Output**: Single `.nexus/e2e_flow.md` file exported as `documentation.docx`.
-- **Use Case**: Extracts a single Master Mermaid E2E Flowchart covering the system end-to-end.
+You can control Nexus by asking your AI assistant in plain English:
 
-### Mode 2: Capability Module Deep-Dives
-- **Tool**: `nexus_plan` + `nexus_save_module_doc`
-- **Output**: Per-module specifications (`.nexus/technical/*.md` & `.nexus/business/*.md`).
-- **Use Case**: Architectural & business rules deep-dives for individual domain modules.
+### 1. Generate Full System Flowchart & Overview
+> *"Nexus, generate the E2E flow documentation for this repository."*
+
+*Nexus extracts the AST graph, creates master Mermaid diagrams, and writes `.nexus/e2e_flow.md`.*
 
 ---
 
-## CLI Usage
+### 2. Create Module Execution Plan
+> *"Nexus, build an execution plan for the codebase."*
 
-```bash
-# Index target repository
-npx nexus-mcp init /path/to/target-repo
+*Returns capability modules, component dependencies, file lists, and priority rankings.*
 
-# Launch Interactive Web Graph Studio (http://localhost:3333)
-npx nexus-mcp ui /path/to/target-repo
+---
 
-# Generate execution plan
-npx nexus-mcp plan /path/to/target-repo
+### 3. Generate Detailed Module Docs (AI Reasoning Loop)
+> *"Nexus, write business flow docs for each module in the plan and save them."*
 
-# Run full workflow
-npx nexus-mcp run /path/to/target-repo
+*Loops through capability modules, retrieves code context, and writes detailed module specifications into `.nexus/business/` and `.nexus/technical/`.*
 
-# Export package to Word (.docx)
-npx nexus-mcp export /path/to/target-repo --format docx --out ./export
+---
 
-# Export package to Docusaurus site
-npx nexus-mcp export /path/to/target-repo --format docusaurus --out ./docs-site
-```
+### 4. Export Documentation to Word (.docx)
+> *"Nexus, export the documentation package to Word format."*
+
+*Finalizes the `.nexus` package and generates a single `documentation.docx` file.*
 
 ---
 
 ## MCP Tools Reference
 
-| Tool | Description |
-|---|---|
-| `nexus_generate_e2e` | Primary single-step tool. Generates Master E2E Mermaid Flowchart and `.nexus/e2e_flow.md`. |
-| `nexus_plan` | Analyzes AST Knowledge Graph and returns module execution tasks. |
-| `nexus_get_module_context` | Returns source code context for a module task. |
-| `nexus_save_module_doc` | Saves technical & business markdown files for a module. |
-| `nexus_finalize` | Finalizes `.nexus` package and writes `metadata.json`. |
-| `nexus_export` | Exports package to Word (`docx`) or Docusaurus. |
+| Tool | What It Does |
+|:---|:---|
+| `nexus_generate_e2e` | Builds master Mermaid flowchart, sequence diagram, and `.nexus/e2e_flow.md`. |
+| `nexus_plan` | Returns module execution tasks, file dependencies, and complexity scores. |
+| `nexus_get_module_context` | Fetches source code context for a specific module to keep context windows small. |
+| `nexus_save_module_doc` | Saves technical and business markdown files into `.nexus`. |
+| `nexus_finalize` | Writes `.nexus/metadata.json` to complete the package. |
+| `nexus_export` | Exports `.nexus` packages to Word (`docx`) or Docusaurus. |
 
 ---
 
