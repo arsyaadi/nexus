@@ -37,6 +37,12 @@ export class FileSystemNexusWriter implements NexusWriter {
 
   async initializePackage(targetDir: string): Promise<void> {
     const nexusRoot = path.join(targetDir, '.nexus');
+    try {
+      await fs.rm(path.join(nexusRoot, 'technical'), { recursive: true, force: true });
+      await fs.rm(path.join(nexusRoot, 'business'), { recursive: true, force: true });
+    } catch {
+      // Ignore if doesn't exist
+    }
     await fs.mkdir(path.join(nexusRoot, 'technical'), { recursive: true });
     await fs.mkdir(path.join(nexusRoot, 'business'), { recursive: true });
   }
